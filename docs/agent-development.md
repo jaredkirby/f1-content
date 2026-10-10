@@ -70,6 +70,20 @@ workspace. Confirm packaged CSS, JavaScript and Jev rubrics can be loaded there.
 This catches accidental reliance on ignored research files or editable-install
 paths. Review both the Git index and wheel contents before release.
 
+The complete release smoke check is reusable after committing source changes:
+
+```sh
+.venv/bin/python scripts/check_clean_clone.py
+```
+
+It clones committed `HEAD` into a disposable directory, installs dependencies,
+runs the offline suite, builds a wheel and installs it into another fresh
+environment. Installed commands and Jev request preparation run outside the source
+checkout using fictional evidence, with no inference. It needs package-index
+access, removes its temporary environments and retains logs under ignored
+`runs/source-verification/`. It refuses a dirty source tree to make the tested
+revision unambiguous.
+
 ## Event archive boundaries
 
 This checkout contains ignored production archives and nested Site Git repositories.

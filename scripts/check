@@ -9,8 +9,10 @@ elif [ -x .venv/bin/python ]; then
 else
   F1_CHECK_PYTHON=python3
 fi
-# Never select a real event workspace while running the offline suite.
-unset F1_WORKSPACE
+# Make accidental reads of the production archive fail locally as well as in CI.
+F1_CHECK_WORKSPACE="$(mktemp -d "${TMPDIR:-/tmp}/f1-check.XXXXXX")"
+trap 'rmdir "$F1_CHECK_WORKSPACE"' 0
+export F1_WORKSPACE="$F1_CHECK_WORKSPACE"
 "$F1_CHECK_PYTHON" -m unittest discover -s tests -v
 "$F1_CHECK_PYTHON" -m f1_pipeline --workspace examples/synthetic doctor
 "$F1_CHECK_PYTHON" -m f1_pipeline.jev_adapter --request examples/synthetic/jev-request.json --validate-only

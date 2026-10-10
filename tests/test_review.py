@@ -120,16 +120,14 @@ class ReviewGates(unittest.TestCase):
     @unittest.skipUnless(importlib.util.find_spec("PIL"), "Use bundled Python with Pillow for render gate")
     def test_render_rejects_manifest_from_another_event(self):
         from f1_pipeline import render as render_module
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            put(root, "data/processed/editorial.json", {"event": {"id": "2026-singapore-sprint"}})
-            put(root, "data/processed/catalog.json", {"event_id": "2026-singapore-sprint", "sources": [], "assets": []})
+        from test_release_gates import fixture_workspace, finalized_fixture
+        with fixture_workspace() as root:
+            # Bind core, validate and render to the same complete synthetic tree.
+            # A render-only ROOT patch accidentally read the production config.
+            finalized_fixture(root)
             put(root, "outputs/manifest.json", {"event_id": "wrong-event", "videos": []})
-            with patch.object(render_module, "ROOT", root), \
-                 patch.object(render_module, "config", return_value={"id": "2026-singapore-sprint"}), \
-                 patch.object(render_module, "render_one", return_value=({"format": "vertical"}, [])) as render_one, \
-                 patch.object(render_module, "log"):
-                with self.assertRaises((ValueError, RuntimeError)):
+            with patch.object(render_module, "render_one") as render_one:
+                with self.assertRaisesRegex(ValueError, "Existing output manifest"):
                     render_module.render("vertical")
                 render_one.assert_not_called()
 

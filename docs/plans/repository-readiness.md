@@ -43,7 +43,16 @@ read-only `doctor`, shell syntax, Markdown links, dependency consistency and a
 67 files, approximately 410 KB, with no forbidden guard matches. CI configuration
 has not run on hosted Linux/macOS runners yet.
 
-Next: commit the reviewed source, clone it without local archives, test its setup
-and installed wheel, compare retained artifact hashes, then record the results.
+The first clean-clone run exposed a real fixture isolation bug: an older render
+test patched only the renderer workspace while the validation helper read the
+production config. The test now uses the complete shared synthetic fixture and
+asserts the intended identity error. `scripts/check` also assigns an empty
+temporary default workspace, so accidental archive reads fail locally. The 78
+tests pass with that isolation. `scripts/check_clean_clone.py` makes the complete
+clone/install verification reusable.
+
+Next: commit the isolation fix, repeat clean-clone and installed-wheel checks,
+then record the results. All 40 retained media hashes and both Site HEAD/status
+snapshots match the pre-change snapshot.
 No remote publication is part of this preparation. Live provider inference, new
 downloads, final renders and hosting are not needed to validate source readiness.
