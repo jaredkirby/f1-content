@@ -46,7 +46,7 @@ from importlib.resources import files
 import json,sys
 import f1_pipeline
 from f1_pipeline import render,jev_adapter
-assert Path(sys.prefix) in Path(f1_pipeline.__file__).resolve().parents
+assert Path(sys.prefix).resolve() in Path(f1_pipeline.__file__).resolve().parents
 r=files('f1_pipeline').joinpath('resources')
 for name in ('timeline.css','timeline.js'):
     assert len(r.joinpath(name).read_text())>100

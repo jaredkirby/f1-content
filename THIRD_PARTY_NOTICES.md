@@ -13,8 +13,9 @@ hash, permission status and any restrictions per asset before distributing media
 
 Dependencies and external tools retain their own licenses:
 
-- [Pillow](https://github.com/python-pillow/Pillow/blob/main/LICENSE): HPND license;
-  installed separately, not vendored.
+- [Pillow](https://github.com/python-pillow/Pillow/blob/main/LICENSE): MIT-CMU,
+  as declared by the pinned 12.3.0 package; its binary distributions carry
+  additional component notices. Installed separately, not vendored.
 - [FFmpeg](https://ffmpeg.org/legal.html): licensing depends on the selected build
   and enabled components; installed separately, not distributed here.
 - macOS speech voices and fonts are platform resources, not bundled assets.
