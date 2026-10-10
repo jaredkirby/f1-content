@@ -1,6 +1,6 @@
 # Repository readiness
 
-Date: 2026-10-10. Status: implemented; final clean-clone verification pending.
+Date: 2026-10-10. Status: complete; local source repository ready for development.
 
 ## Objective
 
@@ -37,10 +37,10 @@ resources, 78 consolidated offline tests, synthetic examples, developer/agent do
 MIT licensing, contribution/security guidance, a staged-blob guard, local hook and
 SHA-pinned CI. Existing delivery archives and one-off research scripts remain local.
 
-Verified so far: `scripts/bootstrap`, `scripts/check`, both retained workspaces'
+Verified: `scripts/bootstrap`, `scripts/check`, both retained workspaces'
 read-only `doctor`, shell syntax, Markdown links, dependency consistency and a
 26-file wheel containing the required rubrics/CSS/JavaScript. The source index has
-67 files, approximately 410 KB, with no forbidden guard matches. CI configuration
+68 files, approximately 417 KB, with no forbidden guard matches. CI configuration
 has not run on hosted Linux/macOS runners yet.
 
 The first clean-clone run exposed a real fixture isolation bug: an older render
@@ -51,8 +51,23 @@ temporary default workspace, so accidental archive reads fail locally. The 78
 tests pass with that isolation. `scripts/check_clean_clone.py` makes the complete
 clone/install verification reusable.
 
-Next: commit the isolation fix, repeat clean-clone and installed-wheel checks,
-then record the results. All 40 retained media hashes and both Site HEAD/status
-snapshots match the pre-change snapshot.
+The repeat passed all 12 clean-clone/install steps on source revision `2a68cc5`:
+fresh Git clone with no event archives, bootstrap, 78 offline tests and smoke
+checks, wheel build/inspection, dependency download, independent environment,
+offline wheel installation, installed CLI diagnostics, Jev request validation,
+packaged-resource imports and synthetic Jev request preparation. No inference
+ran. A macOS symlink-path comparison in the smoke checker was also corrected.
+The clone stayed clean, and temporary environments were removed.
+
+Local evidence is retained in `runs/source-verification/clean-clone-result.json`
+and per-step logs. Earlier failures and the 40-file preservation snapshot are in
+`runs/repository-readiness/`. All 40 retained media hashes and both Site HEAD/status
+snapshots match the pre-change snapshot. The final documentation commit does not
+change the verified implementation. The local pre-commit guard is enabled; new
+clones opt in using the documented command.
+
+Remaining hosting steps, when a remote is chosen: push the reviewed source, run
+the hosted CI matrix, require its checks for merges, and enable private security
+reporting. No remote account, URL or publication result is invented here.
 No remote publication is part of this preparation. Live provider inference, new
 downloads, final renders and hosting are not needed to validate source readiness.
