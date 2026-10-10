@@ -1,0 +1,12 @@
+#!/bin/sh
+# Creates only a project-local environment; never modifies global packages.
+set -eu
+cd "$(dirname "$0")/.."
+F1_BOOTSTRAP_PYTHON="${F1_PYTHON:-python3}"
+"$F1_BOOTSTRAP_PYTHON" -c 'import sys; assert sys.version_info >= (3, 11), "Python 3.11+ required; set F1_PYTHON to its executable"'
+if [ ! -d .venv ]; then
+  "$F1_BOOTSTRAP_PYTHON" -m venv .venv
+fi
+.venv/bin/python -m pip install --disable-pip-version-check -r requirements.txt
+.venv/bin/python -m pip install --disable-pip-version-check -e .
+printf '%s\n' 'Ready. Run scripts/check for offline verification.'

@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+export PYTHONDONTWRITEBYTECODE=1
+cd "$(dirname "$0")/.."
+if [ "${1:-}" = "--workspace" ]; then
+  if [ -z "${2:-}" ]; then
+    echo "Usage: scripts/f1 --workspace EVENT_DIRECTORY COMMAND" >&2
+    exit 2
+  fi
+  F1_WORKSPACE="$(cd "$2" && pwd -P)"
+  export F1_WORKSPACE
+  shift 2
+fi
+if [ -n "${F1_PYTHON:-}" ]; then
+  exec "$F1_PYTHON" -m f1_pipeline "$@"
+elif [ -x .venv/bin/python ]; then
+  exec .venv/bin/python -m f1_pipeline "$@"
+else
+  exec python3 -m f1_pipeline "$@"
+fi

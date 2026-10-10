@@ -1,0 +1,2 @@
+# Reproducible development runtime; compatible range lives in pyproject.toml.
+Pillow==12.3.0

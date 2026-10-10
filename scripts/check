@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+export PYTHONDONTWRITEBYTECODE=1
+if [ -n "${F1_PYTHON:-}" ]; then
+  F1_CHECK_PYTHON="$F1_PYTHON"
+elif [ -x .venv/bin/python ]; then
+  F1_CHECK_PYTHON=.venv/bin/python
+else
+  F1_CHECK_PYTHON=python3
+fi
+# Never select a real event workspace while running the offline suite.
+unset F1_WORKSPACE
+"$F1_CHECK_PYTHON" -m unittest discover -s tests -v
+"$F1_CHECK_PYTHON" -m f1_pipeline --workspace examples/synthetic doctor
+"$F1_CHECK_PYTHON" -m f1_pipeline.jev_adapter --request examples/synthetic/jev-request.json --validate-only
+"$F1_CHECK_PYTHON" scripts/repo_guard.py
+git diff --check
+git diff --cached --check

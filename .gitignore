@@ -1,0 +1,54 @@
+# Operational event workspaces: preserve locally, never publish as source.
+/config/
+/research/
+/data/
+/media/
+/outputs/
+/runs/
+/events/
+/sites/
+/workspaces/
+/Plans/
+
+# Credentials, local agent state and hosting configuration.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*cookies*.txt
+AGENTS.override.md
+.codex/
+.openai/
+.worktreeinclude
+
+# Python, editors and build products.
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+.DS_Store
+.idea/
+.vscode/
+*.part
+*.tmp
+
+# Source repositories carry recipes, not downloaded or generated media.
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.aiff
+*.pdf
+*.zip
+*.tar
+*.gz

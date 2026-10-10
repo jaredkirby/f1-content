@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77,<85"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "f1-content-pipeline"
+version = "0.1.0"
+description = "Evidence-first F1 session research and local video production"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["Pillow>=12.0,<13"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Operating System :: MacOS",
+  "Topic :: Multimedia :: Video",
+]
+
+[project.scripts]
+f1-content = "f1_pipeline.cli:main"
+f1-jev = "f1_pipeline.jev_adapter:main"
+
+[tool.setuptools.packages.find]
+include = ["f1_pipeline*"]
+
+[tool.setuptools.package-data]
+f1_pipeline = ["resources/*.json", "resources/*.css", "resources/*.js"]

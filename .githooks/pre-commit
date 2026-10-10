@@ -1,0 +1,7 @@
+#!/bin/sh
+# Opt in per checkout: git config --local core.hooksPath .githooks
+set -eu
+if [ -x .venv/bin/python ]; then
+  exec .venv/bin/python -B scripts/repo_guard.py
+fi
+exec "${F1_PYTHON:-python3}" -B scripts/repo_guard.py
