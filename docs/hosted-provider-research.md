@@ -28,7 +28,9 @@ An alternative provider is a separate quality comparison, not an automatic fallb
 
 POST `https://openrouter.ai/api/v1/chat/completions` with JSON and
 `Authorization: Bearer $OPENROUTER_API_KEY`. The project requires exact model,
-1–64 nonempty system/user/assistant text messages and `max_tokens` from 1–16,384.
+1–64 nonempty system/user/assistant text messages. The initial 16,384-token
+output allowance was subsequently raised to 65,536; see
+[execution limits](credentials.md#execution-limits).
 Optional controls are temperature, top_p, JSON-object output and one reasoning
 configuration. Default reasoning is high with reasoning text excluded. Effort
 accepts low/high/max; reasoning may be explicitly disabled with enabled:false.
@@ -95,8 +97,10 @@ of aggregate input/output usage and are never added twice.
 `preflight(payload, budget_usd=None)` is offline and reads no key.
 `evaluate(payload, execute=False, budget_usd=None, api_key=None, timeout=20, opener=None)`
 requires explicit execute:true, a positive finite budget covering the ceiling and
-an existing OpenRouter key for one call. Resource caps remain 131,072 request bytes,
-2,000,000 response bytes and 0.001–60 seconds. Missing keys produce an unattempted
+an existing OpenRouter key for one call, supplied through the process
+environment or the consent-bound [Keychain item](credentials.md). Resource caps remain 131,072 request bytes,
+2,000,000 response bytes and 0.001–300 seconds after the
+[quality-validation update](plans/credential-storage-and-quality-validation.md). Missing keys produce an unattempted
 failure; transport/HTTP/schema failures retain safe evidence without echoing raw
 error bodies or credentials. Rate limiting is returned for an explicit later
 operator decision; no automatic backoff can duplicate an ambiguous charge.

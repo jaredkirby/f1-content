@@ -6,6 +6,12 @@ adapter. The [OpenRouter work-plan guide](openrouter-workflow.md) adds native Je
 judgments and dependent story drafting with explicit budgets. They preserve the distinction between local release and human acceptance.
 Run every command against one explicit event workspace. Private records stay there.
 
+These commands describe the combined `main` checkout. Native OpenRouter Jev,
+bounded job plans and consent-bound macOS Keychain storage are documented in
+the [work-plan guide](openrouter-workflow.md) and [credentials guide](credentials.md).
+See [project state](project-state.md) for implemented capabilities and acceptance gaps. The explicit [live feed](live-feed.md)
+is a separate subscription-backed path, not the hosted API adapter below.
+
 ## Start with the subscription reference
 
 ```sh

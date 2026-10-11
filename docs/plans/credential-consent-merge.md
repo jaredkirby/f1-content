@@ -26,4 +26,6 @@ and encrypted handoffs; changed templates type-checked with synthetic deployment
 configuration; nine installed-wheel review tests passed. Both review failures were
 reproduced before implementation. CI now runs the mobile contracts on Node 22.22.0.
 Independent Standards and Spec reviews found no findings.
-Next: source/index guard, commit, PR checks and merge.
+The follow-up merged through pull request #1 into `main` at `10cef3f`.
+The later [live integration](live-main-integration.md) preserves these consent
+contracts while adding the live feed; no Site deployment is implied by that merge.

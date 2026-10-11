@@ -8,10 +8,12 @@ def main(argv=None):
     from .model_cli import COMMANDS, options
     parser = argparse.ArgumentParser(description="Evidence-first F1 session production pipeline (select workspace with F1_WORKSPACE or scripts/f1 --workspace)")
     parser.add_argument("--workspace", type=Path, help="Event directory (defaults to the working directory)")
-    parser.add_argument("command", choices=["doctor", "collect", "catalog", "analyze", "prepare-jev", "prepare-review-site", "review-site-status", "render", "validate", "finalize", "report", "timeline", "run", *COMMANDS])
+    parser.add_argument("command", choices=["live", "doctor", "collect", "catalog", "analyze", "prepare-jev", "prepare-review-site", "review-site-status", "render", "validate", "finalize", "report", "timeline", "run", *COMMANDS])
     parser.add_argument("--refresh", action="store_true", help="Explicitly refresh source downloads")
     parser.add_argument("--format", choices=["vertical", "landscape", "both"], default="both")
     parser.add_argument("--site-directory", type=Path, help="Existing independent Site checkout for the mobile review destination")
+    parser.add_argument("--once", action="store_true", help="One live collection cycle")
+    parser.add_argument("--no-model", action="store_true", help="Collect live evidence without model calls")
     options(parser)
     args = parser.parse_args(argv)
     # Select before loading modules: each process owns exactly one workspace.
@@ -22,6 +24,13 @@ def main(argv=None):
     if not selected.is_dir():
         parser.error("Workspace directory does not exist: " + str(selected))
     os.environ["F1_WORKSPACE"] = str(selected)
+    if args.command == "live":
+        from .live import run_live
+        try:
+            run_live(selected, once=args.once, no_model=args.no_model)
+            return 0
+        except (ValueError, OSError, RuntimeError) as exc:
+            parser.error(str(exc))
     from .core import ROOT, config, now
     from .harness import stage
     if ROOT != selected:

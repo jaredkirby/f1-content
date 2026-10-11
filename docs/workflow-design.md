@@ -6,6 +6,11 @@ This project turns a bounded collection of public source records, local media an
 
 The first Sprint run used Codex research agents for event reporting, media discovery and Jev integration research. A deterministic local Python runner then downloads configured data, catalogs assets, analyzes records, renders edits, validates results and builds the report. `workflows/agents.json` defines responsibilities and handoffs; it is a declarative task specification, not a background agent service. `scripts/f1 run` does not search the web, launch new AI agents or perform Jev inference automatically. Its receipts are evidence of work actually executed.
 
+The [project state review](project-state.md) records the combined `main`
+implementation and the earlier branch comparison. The separate [live feed](live-feed.md) uses
+`config/live.json`, official blog evidence and explicit subscription-backed drafts;
+it does not populate these film contracts or run through `run`.
+
 ## Stage ownership and handoffs
 
 | Stage | Owner and operation | Input | Output and acceptance |
@@ -76,7 +81,12 @@ The official TypeSafe Jev model is text-only. Use transcripts, verified frame ob
 
 The supplied `f1_pipeline/resources/jev_questions.json` asks separate questions for exact-session matching, content category, claim support, narrative impact and explanation value. This follows TypeSafe's decomposed-question and code-composition pattern. Evidence retrieval precedes the model call; Jev does not browse for missing facts. [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring), [citation checking](https://docs.typesafe.ai/cookbooks/citation_check).
 
-The retained Sprint run and current Qualifying analysis use research-agent judgments and transparent keyword rules. `prepare-jev` creates validated per-asset requests inside the selected workspace and explicitly records that preparation is not inference. The adapter has passed offline contract tests, but no Jev key was present and no live Jev inference was performed. Tag deterministic results as `deterministic_rules`, and retain their rule/score basis. A valid Jev result must retain its actual provider model, distributions, token usage and hashed request/response receipt. There is no silent substitution of a different model.
+The retained original Sprint/Qualifying analysis used research-agent judgments
+and transparent keyword rules, with no live Jev inference in those runs. Current
+`prepare-jev` creates one evidence-bound packet per asset/matched claim and
+explicitly records that preparation is not inference. Later OpenRouter work plans
+produced live advisory Jev results, separate from those historical analyses; see
+the [work-plan guide](openrouter-workflow.md). Tag deterministic results as `deterministic_rules`, and retain their rule/score basis. A valid Jev result must retain its actual provider model, distributions, token usage and hashed request/response receipt. There is no silent substitution of a different model.
 
 Treat low confidence and `insufficient_evidence` as review/abstention. Provider confidence summarizes distribution shape; it is not proof of factual accuracy. Before automatic acceptance, evaluate a held-out, source-grouped F1 sample using session-match precision, category precision/recall, accepted-result error rate, coverage, Brier score and calibration error. Rank evaluation uses reviewer preferences or a fixed reference ranking. Tune thresholds on development data, not the held-out sample, and freeze the model/rubric versions. The detailed proposal is in `docs/jev.md`. [TypeSafe confidence](https://docs.typesafe.ai/confidence).
 
@@ -152,8 +162,8 @@ Changing the config alone is insufficient: media discovery/collectors, source re
 
 Success means traceable files and a usable local edit for the declared scope. It never means every public or social F1 video on the internet has been found. Coverage counts, inaccessible sources, unreviewed footage and unavailable models remain visible in the report.
 
-New releases require current technical, editorial, visual and audio receipts before `finalize`. Controlled historical Sprint compatibility preserves its pre-versioned delivery; it is not an exemption for new workspace outputs. Both Site deployments are private and active; each is backed by its native deployment receipt. See [qualifying-workflow-hardening.md](history/qualifying-workflow-hardening.md) for current gates and tested contracts and completed release evidence.
-
+New releases require current technical, editorial, visual and audio receipts before `finalize`. Controlled historical Sprint compatibility preserves its pre-versioned delivery; it is not an exemption for new workspace outputs. Both Site deployments have retained successful private deployment receipts.
+The project-state review did not recheck their current hosted availability. See [qualifying-workflow-hardening.md](history/qualifying-workflow-hardening.md) for current gates and tested contracts and completed release evidence.
 
 ## Explicit model work plans
 

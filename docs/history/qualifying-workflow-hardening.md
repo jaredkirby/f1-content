@@ -51,7 +51,12 @@ These temporary-fixture and mocked-transport checks verify contracts and regress
 
 Research agents still perform discovery, source interpretation, timeline construction and editorial review. The deterministic runner executes collection, processing, arithmetic, assembly and validation; it is not an unattended web-search or agent service. A new event requires a new research bundle, discovered-source inventory, reviewed associations and script, not just a changed session key.
 
-Two nonblocking review observations remain relevant to operators: the generic stage harness can report a successful operation as `passed` even if the collection result inside its manifest is `partial`, so inspect both; and classification-lap association uses the latest matching official duration, so treat that association as an inference unless phase boundaries are separately verified. The retained qualifying event research independently records phase boundaries.
+The historical partial-collection observation was resolved: the current stage
+harness preserves `partial` and source failures, as recorded in the later
+[code review](code-review.md). Inspect the data manifest for endpoint coverage.
+Classification-lap association still uses the latest matching official duration;
+treat it as an inference unless phase boundaries are separately verified. The
+retained qualifying event research independently records phase boundaries.
 
 Jev requests can support session matching, labeling, evidence support and editorial scoring after observations exist. There has been **no live Jev inference** in this qualifying run, and no held-out F1 quality evaluation has been completed. Deterministic calculations and editorial judgments remain labelled accordingly.
 

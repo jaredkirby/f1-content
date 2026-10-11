@@ -2,6 +2,12 @@
 
 Status: implementation complete; live Jev verified, story completion pending. Baseline: `58baa908278bd2dd2d643d2b7be56389269b538e`.
 
+The pending-story and proposed-call statements below describe this checkpoint.
+The subsequent [quality pass](credential-storage-and-quality-validation.md)
+completed draft/critique/revision; the [latest film](latest-quality-review-film.md)
+records the separately corrected and published review output. Human acceptance
+remains pending.
+
 ## Problem Statement
 
 Hosted story drafting exists, but Jev still uses a separate direct credential,

@@ -1,5 +1,9 @@
 # Jev research and F1 integration
 
+Provider research checkpoint: 10 October 2026. Current `main` includes an
+OpenRouter native Jev route and recorded live advisory controls; see [project state](project-state.md).
+The direct adapter and initial research observations below remain a separate contract.
+
 Verified 10 October 2026. The canonical Jev provider is **TypeSafe AI**, at `typesafe.ai`, with documentation at `docs.typesafe.ai` and SDK repositories under `github.com/typesafe-ai`. The [provider announcement](https://typesafe.ai/blog/introducing-system-one-models-and-jev) links directly to the documentation and console. Several similarly named search results explicitly describe themselves as independent services; their endpoints and credentials are not interchangeable.
 
 ## What it can do here

@@ -2,6 +2,11 @@
 
 Date: 2026-10-10. Status: privately published; hosted interactive sign-in and human phone feedback pending.
 
+This is the historical 48.1-second candidate. Later work on `main` produced
+a separately bound 41.3-second edit; [project state](../project-state.md) records
+that follow-up. Neither version has recorded human acceptance in the inspected
+local evidence.
+
 ## Objective and decisions
 
 The corrected OpenRouter request succeeded once, using the selected DeepSeek route.

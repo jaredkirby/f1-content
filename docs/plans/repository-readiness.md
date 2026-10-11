@@ -8,7 +8,7 @@ Turn the local F1 production prototype into a portable, reviewable source reposi
 that people and coding agents can develop without access to private event archives.
 Preserve completed Singapore deliveries and their independent Site repositories.
 
-## Assessment
+## Assessment at the initial checkpoint
 
 - No root Git history or package metadata; two nested Site checkouts already exist.
 - Code and event evidence share a directory. Discovery records can contain signed
@@ -66,8 +66,10 @@ snapshots match the pre-change snapshot. The final documentation commit does not
 change the verified implementation. The local pre-commit guard is enabled; new
 clones opt in using the documented command.
 
-Remaining hosting steps, when a remote is chosen: push the reviewed source, run
+Historical hosting steps at this checkpoint, before a remote was chosen: push the reviewed source, run
 the hosted CI matrix, require its checks for merges, and enable private security
 reporting. No remote account, URL or publication result is invented here.
-No remote publication is part of this preparation. Live provider inference, new
+No remote publication was part of this preparation. The repository now has a
+GitHub origin; [project state](../project-state.md) records the later branch
+state without treating this early clean-clone run as validation of newer code. Live provider inference, new
 downloads, final renders and hosting are not needed to validate source readiness.

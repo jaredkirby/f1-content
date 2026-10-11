@@ -2,6 +2,11 @@
 
 Date: 2026-10-10. Status: complete; verified offline and prepared for authorized execution.
 
+The preparation and next-action statements below are historical. The
+[JSON correction](openrouter-json-mode.md) subsequently executed once and led to
+the [candidate film](openrouter-candidate-film.md); see
+[project state](../project-state.md) for later `main` work.
+
 ## Objective and decisions
 
 Replace the active DeepInfra text adapter with OpenRouter and the user-selected

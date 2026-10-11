@@ -2,6 +2,11 @@
 
 Status: implementation and live validation complete; corrected script awaits editorial review. Baseline: `91f2a3f`.
 
+This record ends before the film render. The subsequent
+[latest-film plan](latest-quality-review-film.md) records the 41.3-second
+review edit and private publication; its hosted interactive check and human
+acceptance remain pending.
+
 ## Objective and decisions
 
 The user authorized persistent safe storage on the next phone entry, broader limits

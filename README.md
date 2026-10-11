@@ -4,12 +4,15 @@ An evidence-first research and local video-production toolkit. It links reviewed
 source media and session data to an event timeline, prioritized story outlines,
 captioned recap edits and a mobile timeline page.
 
-**Status: alpha.** The Singapore Sprint and main Qualifying workflows were exercised
+**Status: alpha.** See the [project state review](docs/project-state.md) for the
+combined `main` capabilities and outstanding acceptance checks.
+The Singapore Sprint and main Qualifying workflows were exercised
 locally. Collection, integrity checks, analysis and release gates are implemented;
-discovery and editorial review are agent-assisted tasks. The runner does not crawl
-the internet or launch agents automatically. Presentation copy remains curated for
-those sessions. Jev has an optional, offline-tested adapter; live model quality has
-not been evaluated.
+discovery and editorial review are agent-assisted tasks. The production `run`
+command does not crawl the internet or launch agents automatically. Presentation
+copy remains curated for those sessions. Optional native Jev judgments and
+DeepSeek drafts have live one-event smoke evidence; held-out quality and human
+acceptance remain pending.
 
 ## How the timeline sites were made
 
@@ -71,12 +74,19 @@ The module/installed CLI defaults to the current directory. The source launcher
 Sprint workflow. `F1_WORKSPACE` may select an absolute event directory. One process
 owns one workspace. No command silently chooses the latest race.
 
+## Follow a race
+
+The explicit [live feed](docs/live-feed.md) backfills a verified official race
+live blog, polls for corrections/new reports and produces sourced drafts through
+Codex authenticated with ChatGPT. It uses a separate workspace and bounded
+deadline; it does not alter film release gates or launch through `run`.
+
 ## Repository map
 
 | Path | Purpose |
 |---|---|
 | `f1_pipeline/` | Collection, catalog, analysis, rendering, validation, release and optional Jev client |
-| `f1_pipeline/resources/` | Packaged Jev rubrics, timeline CSS/JavaScript and mobile review Site templates |
+| `f1_pipeline/resources/` | Packaged Jev rubrics, timeline CSS/JavaScript, mobile review Site templates and the live report |
 | `scripts/` | Setup, offline verification, archive QA, legacy Sprint page builders and Git guard |
 | `tests/` | Synthetic regressions for identity, integrity, release gates, transport and portability |
 | `examples/synthetic/` | Fictional config/request; no external content |
@@ -114,10 +124,12 @@ Opt into the local hook:
 git config --local core.hooksPath .githooks
 ```
 
-CI runs the same offline checks on Linux/Python 3.11–3.13 and macOS/Python 3.12,
-then verifies the wheel contains its resources. These jobs become active after
-hosting on GitHub; local verification results are recorded in the
-[readiness plan](docs/plans/repository-readiness.md).
+The configured CI runs offline checks on Linux/Python 3.11–3.13 and
+macOS/Python 3.12, then verifies the wheel contains its resources. The repository
+has a GitHub origin; hosted CI results and repository settings were not refreshed
+by this review. The [readiness plan](docs/plans/repository-readiness.md) records
+the initial local verification; combined capabilities are listed in the
+[project state review](docs/project-state.md).
 
 ## Contracts and limits
 
@@ -129,7 +141,9 @@ sampled visual inspection, playback and user acceptance are distinct evidence.
 
 Discovery is bounded. Historical Sprint compatibility and curated Singapore
 presentation logic are documented limitations. Jev request preparation performs no
-model calls; explicit inference needs `TYPESAFE_API_KEY` in the invoking process.
+model calls. The direct legacy adapter uses `TYPESAFE_API_KEY`; current
+[OpenRouter work plans](docs/openrouter-workflow.md) use securely supplied
+OpenRouter credentials, with optional consent-bound [Keychain storage](docs/credentials.md).
 Provider results remain advisory until evaluated on held-out labels. See
 [workflow contracts](docs/workflow-design.md), [Jev research](docs/jev.md) and the
 [qualifying hardening record](docs/history/qualifying-workflow-hardening.md).

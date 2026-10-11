@@ -2,6 +2,11 @@
 
 Date: 2026-10-10. Status: corrected request executed; candidate film published for phone feedback.
 
+This record follows preparation through execution in order. Statements that
+the corrected request is unexecuted or awaits a key apply to the intermediate
+checkpoints below, not its final outcome. See [project state](../project-state.md)
+for the current branch and later review output.
+
 ## Objective and decisions
 
 The first authorized OpenRouter candidate returned HTTP 400 with no completion or
