@@ -32,10 +32,12 @@ Rank ideas only after evidence and asset feasibility checks. Proposed initial fo
 These weights have not been confirmed as the user's preferences. Follow the
 [human quality and subscription-first policy](model-selection.md): quality comes
 from explicit user feedback, and Jev is an optional advisory comparison. Current
-analysis does not consume Jev inference receipts. Prepared source requests check
-only the first matched event summary for claim support; they are not complete
-script checks. Any downstream integration needs individual claim/evidence bindings,
-evaluated results and model provenance before it can affect production decisions.
+analysis remains deterministic. The explicit [OpenRouter workflow](openrouter-workflow.md)
+now prepares each matched timeline claim separately, consumes accepted native Jev
+answers in dependent story jobs, and exposes an evidence-bound review queue.
+It does not change production rankings or render plans automatically. The direct
+TypeSafe adapter below remains a compatibility path; new workspace commands use
+`typesafe/jev-1.13` through OpenRouter. [Verified native contract](openrouter-jev-integration-research.md).
 
 ## Evaluation and abstention
 

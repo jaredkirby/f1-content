@@ -12,7 +12,7 @@ from pathlib import Path
 
 COMMANDS = (
     'feedback-record', 'feedback-status', 'preference-record', 'preference-status',
-    'model-import', 'model-route', 'model-evaluate', 'model-infer',
+    'model-import', 'model-route', 'model-evaluate', 'model-infer', 'jev-infer', 'model-run', 'model-review',
 )
 MAX_DOCUMENT_BYTES = 2_000_000
 
@@ -28,7 +28,8 @@ def options(parser):
     group.add_argument('--prompt-version', help='Actual prompt version for a hosted execution')
     group.add_argument('--rubric-version', help='Actual review-rubric version for a hosted execution')
     group.add_argument('--evidence', action='append', default=[], help='Event-relative evidence file; repeat as needed')
-    group.add_argument('--execute', action='store_true', help='Explicitly send one paid hosted request (model-infer only)')
+    group.add_argument('--expected-plan-sha256', help='Require the exact authorized model-plan bytes before execution')
+    group.add_argument('--execute', action='store_true', help='Explicitly execute bounded hosted model work')
     group.add_argument('--budget-usd', type=float, help='Authorized hosted request budget under the documented rates')
     group.add_argument('--timeout-seconds', type=float, default=20, help='Bounded hosted transport timeout, at most 60 seconds')
 
@@ -58,7 +59,10 @@ def _binding(relative):
 
 def _hosted_work(args):
     from .core import ROOT, config, ensure_space, safe_relative, write_json
-    from .hosted_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
+    if args.command == 'jev-infer':
+        from .jev_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
+    else:
+        from .hosted_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
     if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 60:
         raise ValueError('timeout-seconds must be finite, positive and at most 60')
     payload = load_request(args.request)
@@ -161,8 +165,14 @@ def _hosted_work(args):
 
 def run(args):
     from .core import ROOT
-    if args.execute and args.command != 'model-infer':
-        raise ValueError('--execute is only supported by model-infer')
+    if args.execute and args.command not in ('model-infer', 'jev-infer', 'model-run'):
+        raise ValueError('--execute is only supported by explicit model execution commands')
+    if args.command == 'model-run':
+        from .model_jobs import run_plan
+        return run_plan(args)
+    if args.command == 'model-review':
+        from .model_jobs import review_plan
+        return review_plan(args.request)
     if args.command in ('feedback-record', 'preference-record', 'feedback-status', 'preference-status'):
         from .feedback import record_feedback, record_preference, feedback_status, preference_status
         if args.command == 'feedback-record':
@@ -180,6 +190,6 @@ def run(args):
         if args.command == 'model-route':
             return route_advice(args.task, subscription_status=args.subscription_status, root=ROOT)
         return evaluation_report(comparison_id=args.comparison_id, root=ROOT)
-    if args.command == 'model-infer':
+    if args.command in ('model-infer', 'jev-infer'):
         return _hosted_work(args)
     raise ValueError('Unknown model-work command')

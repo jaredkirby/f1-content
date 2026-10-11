@@ -41,11 +41,11 @@ def number(value, low, high):
             and low <= value <= high)
 
 
-def validate_request(payload):
+def validate_request(payload, *, model=MODEL):
     if not isinstance(payload, dict) or set(payload) != {"model", "state", "questions"}:
         raise JevError("Request must contain exactly model, state, questions")
-    if payload["model"] != MODEL:
-        raise JevError("This evaluated adapter pins model " + MODEL)
+    if payload["model"] != model:
+        raise JevError("This evaluated adapter pins model " + model)
     if not isinstance(payload["state"], (str, dict, list)) or not payload["state"]:
         raise JevError("state must be a nonempty text, object, or array")
     questions = payload["questions"]
@@ -85,8 +85,9 @@ def validate_request(payload):
     return body
 
 
-def validate_response(response, payload):
-    if not isinstance(response, dict) or response.get("model") != payload["model"]:
+def validate_response(response, payload, *, allowed_models=None):
+    if (not isinstance(response, dict) or not isinstance(response.get('model'), str)
+            or response['model'] not in (allowed_models or {payload['model']})):
         raise JevError("Missing or unexpected provider model identity")
     answers = response.get("answers")
     if not isinstance(answers, dict) or set(answers) != set(payload["questions"]):

@@ -42,7 +42,7 @@
     "discovery": "subscription-assisted bounded search; retrieval is separate from model inference",
     "event_research": "subscription synthesis with source locators and explicit conflicts",
     "catalog": "deterministic catalog plus observed interval review; vision models require separate evaluation",
-    "typed_judgments": "optional advisory comparison; Jev remains disabled unless explicitly authorized and evaluated",
+    "typed_judgments": "Explicit advisory Jev calls through OpenRouter; typed findings feed bounded story jobs and human review, never automatic acceptance",
     "story_editor": "subscription reference plus human brief and user review of important narrative choices",
     "assembly": "deterministic render with reviewed script; voice changes require listening feedback",
     "qa": "independent evidence review and technical checks; model scores do not imply human acceptance",
@@ -117,5 +117,20 @@
     "selection_basis": "explicit user instruction; candidate route, not quality promotion",
     "provider_fallbacks": false,
     "adapter_scope": "bounded text; vision, transcription and narration require separate adapters and human evaluation"
+  },
+  "explicit_orchestration": {
+    "commands": [
+      "jev-infer",
+      "model-run",
+      "model-review"
+    ],
+    "provider": "OpenRouter",
+    "jev_model": "typesafe/jev-1.13",
+    "jev_provider": "typesafe",
+    "provider_fallbacks": false,
+    "automatic_retries": false,
+    "max_jobs": 16,
+    "plan_budget_required": true,
+    "quality_promotion": false
   }
 }

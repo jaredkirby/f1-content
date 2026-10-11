@@ -103,3 +103,20 @@ class MobileCandidateTests(unittest.TestCase):
             state_path.write_text(json.dumps(state))
             payload['operationId'] = sha[:24]
             self.assertNotEqual(self.invoke(payload).returncode, 0)
+
+    def test_model_plan_handoff_binds_budget_jobs_and_refuses_changed_plan(self):
+        import test_model_jobs as jobs
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);plan=jobs.ModelJobsTests().fixture(root)
+            sha=hashlib.sha256(plan.read_bytes()).hexdigest()
+            payload={'mode':'verify-plan','siteUrl':'https://'+'synthetic'+'.chatgpt.site',
+                     'workspace':str(root),'planPath':'plan.json','requestSha256':sha,
+                     'operationId':sha[:24],'budgetUsd':0.5,'maxCalls':2}
+            result=self.invoke(payload)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout.splitlines()[-1])['status'],'verified_plan_bindings')
+            payload['maxCalls']=3
+            self.assertNotEqual(self.invoke(payload).returncode,0)
+            payload['maxCalls']=2
+            data=json.loads(plan.read_text());data['budget_usd']=2;plan.write_text(json.dumps(data))
+            self.assertNotEqual(self.invoke(payload).returncode,0)

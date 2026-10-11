@@ -2,7 +2,8 @@
 
 These commands implement the first steps of the [model-selection policy](model-selection.md):
 explicit feedback, provenance, route advice, offline evaluation and a hosted text
-adapter. They preserve the distinction between local release and human acceptance.
+adapter. The [OpenRouter work-plan guide](openrouter-workflow.md) adds native Jev
+judgments and dependent story drafting with explicit budgets. They preserve the distinction between local release and human acceptance.
 Run every command against one explicit event workspace. Private records stay there.
 
 ## Start with the subscription reference

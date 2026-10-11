@@ -30,10 +30,33 @@ try {
   if(origin.username||origin.password||origin.search||origin.hash||(!local&&!hosted))throw new Error('Invalid Site origin.');
   if(input.mode==='verify-local') {
     if(!local)throw new Error('Local verification cannot use a hosted Site.');
-  } else if(!['execute','verify-execution'].includes(input.mode)||!hosted)throw new Error('Execution requires the private hosted Site.');
+  } else if(!['execute','verify-execution','execute-plan','verify-plan'].includes(input.mode)||!hosted)throw new Error('Execution requires the private hosted Site.');
 
   let root, state, authorization, requestPath, workId, promptVersion, rubricVersion;
-  if(input.mode!=='verify-local') {
+  const planMode=['execute-plan','verify-plan'].includes(input.mode);
+  if(planMode) {
+    if(!path.isAbsolute(input.workspace)||typeof input.planPath!=='string')throw new Error('Explicit workspace and plan required.');
+    root=path.resolve(input.workspace);requestPath=path.resolve(root,input.planPath);
+    if(!fs.realpathSync(requestPath).startsWith(fs.realpathSync(root)+path.sep))throw new Error('Plan is outside workspace.');
+    const sha=crypto.createHash('sha256').update(fs.readFileSync(requestPath)).digest('hex');
+    const preview=spawnSync(path.join(project,'.venv/bin/python'),['-B','-m','f1_pipeline','--workspace',root,
+      'model-run','--request',requestPath],{cwd:project,encoding:'utf8',timeout:20000,maxBuffer:4000000});
+    if(preview.status!==0)throw new Error('Plan preflight failed.');
+    const result=JSON.parse(preview.stdout);
+    if(sha!==input.requestSha256||input.operationId!==sha.slice(0,24)||result.budget_usd!==input.budgetUsd||
+       result.max_calls!==input.maxCalls||result.preflight_ceiling_usd>input.budgetUsd)throw new Error('Plan handoff bindings changed.');
+    if(fs.existsSync(path.join(root,'runs/model-plans',result.plan_id)))throw new Error('Plan already attempted.');
+    const plan=JSON.parse(fs.readFileSync(requestPath,'utf8'));
+    for(const job of plan.jobs){
+      const base=path.join(root,'runs/model-evaluations',plan.comparison_id,job.id);
+      if(fs.existsSync(base+'.assets')||fs.existsSync(base+'.json'))throw new Error('Job already attempted.');
+    }
+    if(input.mode==='verify-plan'){
+      process.stdout.write(JSON.stringify({status:'verified_plan_bindings',request_sha256:sha,
+        max_calls:result.max_calls,budget_usd:result.budget_usd,inference_attempted:false})+'\n');
+      process.exit(0);
+    }
+  } else if(input.mode!=='verify-local') {
     if(!path.isAbsolute(input.workspace))throw new Error('An absolute event workspace is required.');
     root=path.resolve(input.workspace);
     const within=relative=>{const file=path.resolve(root,relative);if(!file.startsWith(root+path.sep))throw new Error('Invalid workspace binding.');return file;};
@@ -88,20 +111,22 @@ try {
     const body=await response.text();if(body.length>4096)throw new Error('Invalid credential response.');
     const handoff=JSON.parse(body);
     if(handoff.operationId!==input.operationId||handoff.requestSha256!==input.requestSha256||
-       handoff.budgetUsd!==input.budgetUsd||typeof handoff.key!=='string'||!handoff.key||
+       handoff.budgetUsd!==input.budgetUsd||(planMode&&handoff.maxCalls!==input.maxCalls)||typeof handoff.key!=='string'||!handoff.key||
        handoff.key.length>512||! /^[!-~]+$/.test(handoff.key))throw new Error('Credential handoff bindings changed.');
     if(input.mode==='verify-local') {
       if(handoff.key!=='synthetic-mobile-key')throw new Error('Local verification accepts only its synthetic fixture.');
       process.stdout.write(JSON.stringify({status:'verified_local_handoff',inference_attempted:false})+'\n');
     } else {
-      const result=spawnSync(path.join(project,'.venv/bin/python'),['-B','-m','f1_pipeline','--workspace',root,
+      const executionArgs=planMode ? ['-B','-m','f1_pipeline','--workspace',root,
+        'model-run','--request',requestPath,'--expected-plan-sha256',input.requestSha256,'--execute','--budget-usd',String(input.budgetUsd),'--timeout-seconds','60'] : ['-B','-m','f1_pipeline','--workspace',root,
         'model-infer','--request',requestPath,'--execute','--budget-usd',String(input.budgetUsd),
         '--timeout-seconds','60','--comparison-id',state.comparison_id,'--work-id',workId,
         '--format','vertical','--task','story_script','--prompt-version',promptVersion,
         '--rubric-version',rubricVersion,'--evidence','runs/pilot/frozen-brief.json',
         '--evidence','research/event/sector_comparison.json','--evidence','research/event/event_bundle.json',
-        '--evidence','research/media/clip_review.json','--evidence','outputs/manifest.json'],{
-        cwd:project,encoding:'utf8',timeout:80000,maxBuffer:4000000,
+        '--evidence','research/media/clip_review.json','--evidence','outputs/manifest.json'];
+      const result=spawnSync(path.join(project,'.venv/bin/python'),executionArgs,{
+        cwd:project,encoding:'utf8',timeout:planMode ? input.maxCalls*65000+20000 : 80000,maxBuffer:4000000,
         env:{...process.env,OPENROUTER_API_KEY:handoff.key,PYTHONDONTWRITEBYTECODE:'1'}});
       const safe=value=>(value||'').split(handoff.key).join('[redacted]');
       const stdout=safe(result.stdout),stderr=safe(result.stderr);
