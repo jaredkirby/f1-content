@@ -74,6 +74,10 @@ The module/installed CLI defaults to the current directory. The source launcher
 Sprint workflow. `F1_WORKSPACE` may select an absolute event directory. One process
 owns one workspace. No command silently chooses the latest race.
 
+For reusable text-to-speech and optional robot voice processing, use the explicit
+[narration workflow](docs/narration.md). Prepare/import or authorize speech first,
+select clean or vocoder audio, then render from saved hash-bound assets.
+
 ## Follow a race
 
 The explicit [live feed](docs/live-feed.md) backfills a verified official race

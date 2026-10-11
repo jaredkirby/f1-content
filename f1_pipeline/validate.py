@@ -23,6 +23,7 @@ def input_path(relative):
     return safe_relative(relative)
 
 def required_render_inputs():
+    from .narration import selection_inputs
     required={'config/event.json','research/event/event_bundle.json','research/media/clip_review.json',
               'data/processed/editorial.json','data/processed/catalog.json'}
     required.add('research/event/video_plan.json' if (ROOT/'research/event/video_plan.json').is_file()
@@ -32,6 +33,7 @@ def required_render_inputs():
         if (ROOT/optional).is_file():required.add(optional)
     for asset in read_json(ROOT/'data/processed/catalog.json',{}).get('assets',[]):
         if asset.get('original'):required.add(asset['original'])
+    required.update(selection_inputs(ROOT))
     return required
 
 def verify_bindings(bindings,required,label):

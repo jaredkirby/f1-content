@@ -80,6 +80,12 @@ def prepare_review_site(site_directory):
             raise ValueError("Review asset exceeds the bounded Site asset size: " + key)
         sources[key] = source
     receipts = []
+    for link in video.get('model_runs', []):
+        from .feedback import _model_runs
+        from .model_evaluation import IDENTITY_KEYS
+        _model_runs([link], ROOT, {k: cfg[k] for k in IDENTITY_KEYS})
+        if link not in receipts:
+            receipts.append(link)
     state = read_json(safe_relative('runs/pilot/pilot-state.json'), {})
     if state:
         if state.get('manifest_sha256') != manifest_sha or state.get('video', {}).get('sha256') != video['sha256']:
@@ -88,7 +94,8 @@ def prepare_review_site(site_directory):
         if receipt:
             if digest(safe_relative(receipt['path'])) != receipt['sha256']:
                 raise ValueError("Pilot model receipt changed")
-            receipts.append({'path': receipt['path'], 'sha256': receipt['sha256']})
+            link = {'path': receipt['path'], 'sha256': receipt['sha256']}
+            if link not in receipts: receipts.append(link)
     operation = {'id': 'not-configured', 'enabled': False, 'persistKeychain': False,
                  'model': 'deepseek/deepseek-v4.1-flash', 'budgetUsd': None,
                  'requestSha256': None, 'requestFileSha256': None}
@@ -147,6 +154,7 @@ def prepare_review_site(site_directory):
     pilot = {'eventId': cfg['id'], 'eventLabel': f"{cfg['country_name']} · {cfg['session_name']} · {cfg['year']}",
              'title': video['title'], 'format': 'vertical', 'duration': duration,
              'reviewLabel': review_label, 'authoringNote': authoring_note,
+             'narration': video.get('narration', 'macOS Samantha narration'),
              'credentialHandoffEnabled': operation['enabled'],
              'width': video['width'], 'height': video['height'], 'version': manifest['run_id'],
              'manifestSha256': manifest_sha, 'videoSha256': video['sha256'], 'modelReceipts': receipts,

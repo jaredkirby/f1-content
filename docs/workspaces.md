@@ -52,6 +52,10 @@ requests only. `run` chains collection, catalog, analysis, render, validation an
 report; it does not perform missing research or finalize a release.
 
 The renderer uses macOS `say`, the Samantha voice, system fonts, FFmpeg and ffprobe.
+The optional [narration workflow](narration.md) prepares imported, system or
+explicitly authorized ElevenLabs speech before assembly and can add Robot Voice
+Lab vocoder processing. Rendering consumes saved selections without provider
+calls. Unselected formats retain Samantha; system fonts still require macOS.
 Linux can run offline tests and supported data stages; native narration rendering
 has not been ported. `doctor` reports tool paths and validates config, but is not a
 render acceptance check. Install external tools separately and honor the reserve.

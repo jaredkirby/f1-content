@@ -206,6 +206,8 @@ def checked_scene(scene,editorial,asset,require_bindings=False,review_sha=None):
     return allowed_end
 
 def render_one(format_name, plan, editorial, catalog, output_dir=None):
+    from .narration import selected_narration
+    narration = selected_narration(format_name, ROOT)
     ensure_space(350*1024*1024)
     if format_name not in ('vertical','landscape'):raise ValueError('Unsupported render format')
     work=safe_relative(ROOT/"outputs/work"/format_name); work.mkdir(parents=True,exist_ok=True)
@@ -226,33 +228,51 @@ def render_one(format_name, plan, editorial, catalog, output_dir=None):
             scene['source_out_limit']=allowed_end
             scene['source_sha256']=asset['sha256']
             scene['review_receipt_sha256']=asset['review_receipt_sha256']
-        chunks=phrases(scene["narration"])
         speech=[]; duration=0
-        for j,text in enumerate(chunks):
-            key=hashlib.sha256(("Samantha|172|"+text).encode()).hexdigest()[:16]
-            aiff=work/f"voice-{key}.aiff"
-            if not aiff.exists() or aiff.stat().st_size < 500:
-                run(["say","-v","Samantha","-r","172","-o",aiff,text],timeout=60)
-            audio_info=probe(aiff)
-            if not audio_info.get("streams") or not audio_info.get("format",{}).get("duration"):
-                aiff.unlink(missing_ok=True)
-                raise RuntimeError("macOS speech service unavailable; generate narration with approved system access")
-            seconds=float(audio_info["format"]["duration"])
-            speech.append((aiff,seconds,text,duration))
-            duration+=seconds
-        # All scene boundaries land on the output frame grid to prevent cumulative caption drift.
-        duration = math.ceil(duration * 24) / 24
-        audio_list=work/f"{i:02}-audio.ffconcat"
-        concat_file(audio_list,[(p,None) for p,_,_,_ in speech])
-        wav=work/f"{i:02}-narration.wav"
-        run(["ffmpeg","-v","error","-y","-f","concat","-safe","0","-i",audio_list,"-ar","48000","-ac","1",wav])
+        if narration:
+            row = narration['scenes'][i]
+            if row['id'] != scene['id']:
+                raise ValueError('Prepared narration scene order changed')
+            wav = safe_relative(row['audio']['path'])
+            duration = row['duration']
+            cursor = 0
+            for cue in row['captions']:
+                if cue['start'] > cursor:
+                    speech.append((wav, cue['start']-cursor, '', cursor))
+                speech.append((wav, cue['end']-cue['start'], cue['text'], cue['start']))
+                cursor = cue['end']
+            if cursor < duration:
+                speech.append((wav, duration-cursor, '', cursor))
+            scene['narration_audio'] = row['audio']
+            scene['narration_effect_receipt'] = narration['effect_receipt']
+        else:
+            chunks=phrases(scene["narration"])
+            for j,text in enumerate(chunks):
+                key=hashlib.sha256(("Samantha|172|"+text).encode()).hexdigest()[:16]
+                aiff=work/f"voice-{key}.aiff"
+                if not aiff.exists() or aiff.stat().st_size < 500:
+                    run(["say","-v","Samantha","-r","172","-o",aiff,text],timeout=60)
+                audio_info=probe(aiff)
+                if not audio_info.get("streams") or not audio_info.get("format",{}).get("duration"):
+                    aiff.unlink(missing_ok=True)
+                    raise RuntimeError("macOS speech service unavailable; generate narration with approved system access")
+                seconds=float(audio_info["format"]["duration"])
+                speech.append((aiff,seconds,text,duration))
+                duration+=seconds
+            # All scene boundaries land on the output frame grid to prevent cumulative caption drift.
+            duration = math.ceil(duration * 24) / 24
+            audio_list=work/f"{i:02}-audio.ffconcat"
+            concat_file(audio_list,[(p,None) for p,_,_,_ in speech])
+            wav=work/f"{i:02}-narration.wav"
+            run(["ffmpeg","-v","error","-y","-f","concat","-safe","0","-i",audio_list,"-ar","48000","-ac","1",wav])
         overlays=[]
         available=allowed_end-scene["source_in"] if asset else duration
         for j,(_,seconds,text,offset) in enumerate(speech):
             png=work/f"{i:02}-overlay-{j:02}.png"
             overlay_image(format_name,scene,text,i,len(scenes),editorial,(i+(offset+seconds)/duration)/len(scenes),offset+seconds>available).save(png)
             overlays.append((png,seconds))
-            caption_records.append({"start":elapsed+offset,"end":elapsed+offset+seconds,"text":text})
+            if text:
+                caption_records.append({"start":elapsed+offset,"end":elapsed+offset+seconds,"text":text})
         overlay_list=work/f"{i:02}-overlay.ffconcat"
         concat_file(overlay_list,overlays+[(overlays[-1][0],None)])
         movie=work/f"{i:02}-{scene['id']}.mov"
@@ -293,7 +313,7 @@ def render_one(format_name, plan, editorial, catalog, output_dir=None):
     srt.write_text("\n\n".join(f"{i+1}\n{srt_time(c['start'])} --> {srt_time(c['end'])}\n{c['text']}" for i,c in enumerate(caption_records))+"\n")
     script=out.with_suffix(".txt");script.write_text("\n\n".join(s["title"].replace("\n"," ")+"\n"+s["narration"] for s in scenes)+"\n")
     thumbnail=out.with_suffix(".jpg")
-    run(["ffmpeg","-v","error","-y","-ss","2","-i",out,"-frames:v","1",thumbnail])
+    run(["ffmpeg","-v","error","-y","-ss",str(min(2, elapsed/2)),"-i",out,"-frames:v","1",thumbnail])
     full_info=probe(out)
     record={"format":format_name,"title":plan["title"],"idea_id":plan["idea_id"],"path":str(out.relative_to(ROOT)),
             "captions":str(srt.relative_to(ROOT)),"script":str(script.relative_to(ROOT)),"thumbnail":str(thumbnail.relative_to(ROOT)),
@@ -301,6 +321,12 @@ def render_one(format_name, plan, editorial, catalog, output_dir=None):
             "status":"rendered_awaiting_QA","narration":"macOS Samantha, original editorial script; phrase-aligned captions",
             "sources":sorted({s["source_id"] for s in edl if s.get("source_id")}),"publication_status":"local_review; footage reuse clearance unverified"}
     record['companion_sha256']={k:digest(ROOT/record[k]) for k in ('captions','script','thumbnail')}
+    if narration:
+        backend = {'say': 'macOS Samantha', 'imported': 'Imported narration', 'elevenlabs': 'ElevenLabs narration'}[narration['provider']['kind']]
+        effect = 'Robot Voice Lab vocoder' if narration['effect']['kind'] == 'robot_vocoder' else 'clean voice'
+        record['narration'] = f"{backend}; {effect}; measured caption timings"
+        record['narration_receipts'] = [narration['source_result'], narration['effect_receipt']]
+        record['model_runs'] = narration['model_runs']
     return record,edl
 
 def render(selection="both"):

@@ -11,6 +11,17 @@ PROJECT = Path(__file__).resolve().parents[1]
 
 
 class CredentialsTests(unittest.TestCase):
+    def test_elevenlabs_credentials_never_read_openrouter_item(self):
+        from unittest.mock import patch
+        from f1_pipeline.credentials import resolve_api_key, native
+        result = subprocess.CompletedProcess([], 0, stdout=b'synthetic-eleven-key', stderr=b'')
+        with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'wrong-provider'}, clear=True), patch('sys.platform', 'darwin'), patch('subprocess.run', return_value=result) as run:
+            self.assertEqual(resolve_api_key('elevenlabs'), 'synthetic-eleven-key')
+            self.assertEqual(run.call_args.args[0][-2:], ['--provider', 'elevenlabs'])
+            self.assertNotIn('wrong-provider', run.call_args.args[0])
+        with patch.dict(os.environ, {'ELEVENLABS_API_KEY': 'synthetic-env-key'}, clear=True), patch('subprocess.run') as run:
+            self.assertEqual(resolve_api_key('elevenlabs'), 'synthetic-env-key'); run.assert_not_called()
+
     def test_cli_stores_over_stdin_and_reports_only_metadata(self):
         script = '''
 import json, subprocess, sys

@@ -7,15 +7,17 @@ from pathlib import Path
 def main(argv=None):
     from .model_cli import COMMANDS, options
     from .quality_protocol import COMMANDS as QUALITY_COMMANDS
+    from .narration_cli import COMMANDS as SPEECH_COMMANDS, options as speech_options
     parser = argparse.ArgumentParser(description="Evidence-first F1 session production pipeline (select workspace with F1_WORKSPACE or scripts/f1 --workspace)")
     parser.add_argument("--workspace", type=Path, help="Event directory (defaults to the working directory)")
-    parser.add_argument("command", choices=["live", "doctor", "collect", "catalog", "analyze", "prepare-jev", "prepare-review-site", "review-site-status", "render", "validate", "finalize", "report", "timeline", "run", *COMMANDS, *QUALITY_COMMANDS])
+    parser.add_argument("command", choices=["live", "doctor", "collect", "catalog", "analyze", "prepare-jev", "prepare-review-site", "review-site-status", "render", "validate", "finalize", "report", "timeline", "run", *COMMANDS, *QUALITY_COMMANDS, *SPEECH_COMMANDS])
     parser.add_argument("--refresh", action="store_true", help="Explicitly refresh source downloads")
     parser.add_argument("--format", choices=["vertical", "landscape", "both"], default="both")
     parser.add_argument("--site-directory", type=Path, help="Existing independent Site checkout for the mobile review destination")
     parser.add_argument("--once", action="store_true", help="One live collection cycle")
     parser.add_argument("--no-model", action="store_true", help="Collect live evidence without model calls")
     options(parser)
+    speech_options(parser)
     args = parser.parse_args(argv)
     # Select before loading modules: each process owns exactly one workspace.
     selected = args.workspace or Path(os.environ.get("F1_WORKSPACE", Path.cwd()))
@@ -54,6 +56,13 @@ def main(argv=None):
             return 0
         except (ValueError, OSError, KeyError, TypeError) as exc:
             parser.error(str(exc))
+    if args.command in SPEECH_COMMANDS:
+        from .narration_cli import run
+        try:
+            print(json.dumps(run(args), indent=2, allow_nan=False))
+            return 0
+        except (ValueError, OSError, RuntimeError, KeyError, TypeError) as exc:
+            parser.error(str(exc))
     if args.command in QUALITY_COMMANDS:
         from .quality_protocol import run
         try:
@@ -71,8 +80,11 @@ def main(argv=None):
         except (ValueError, OSError, RuntimeError) as exc:
             parser.error(str(exc))
     if args.command == "doctor":
+        from .narration import selections
+        narration = selections(ROOT)
         print(json.dumps({"at": now(), "root": str(ROOT), "free_bytes": shutil.disk_usage(ROOT).free,
-                          "config": event_config, "tools": {t: shutil.which(t) for t in ("ffmpeg", "ffprobe", "say")}}, indent=2))
+                          "config": event_config, "narration": {name: {'provider': item['provider'], 'effect': item['effect']} for name, item in narration.items()} if narration else {'provider': 'macos-say', 'voice': 'Samantha'},
+                          "tools": {t: shutil.which(t) for t in ("ffmpeg", "ffprobe", "say", "node")}}, indent=2))
     if args.command in ("collect", "run"):
         from .collect import collect_data
         stage('collect', lambda: collect_data(args.refresh))

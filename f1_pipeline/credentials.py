@@ -1,4 +1,4 @@
-"""OpenRouter credentials: explicit environment or this Mac's named Keychain item."""
+"""Provider credentials: explicit environment or distinct named Keychain items."""
 import argparse
 import getpass
 import json
@@ -12,10 +12,14 @@ def valid_key(value):
     return isinstance(value, str) and 1 <= len(value) <= 512 and all(33 <= ord(c) <= 126 for c in value)
 
 
-def native(action, value=None):
+def native(action, value=None, provider='openrouter'):
+    if provider not in {'openrouter', 'elevenlabs'}:
+        raise ValueError('Unsupported credential provider')
     helper = Path(sys.prefix) / 'bin' / 'f1-keychain'
     try:
-        result = subprocess.run([str(helper), action], input=value, capture_output=True, timeout=15)
+        command = [str(helper), action]
+        if provider != 'openrouter': command += ['--provider', provider]
+        result = subprocess.run(command, input=value, capture_output=True, timeout=15)
     except (OSError, subprocess.TimeoutExpired):
         raise ValueError('Keychain helper unavailable; run scripts/build_keychain.py on this Mac') from None
     if result.returncode:
@@ -24,30 +28,35 @@ def native(action, value=None):
     return result.stdout
 
 
-def resolve_api_key():
-    if 'OPENROUTER_API_KEY' in os.environ:
-        return os.environ['OPENROUTER_API_KEY']
+def resolve_api_key(provider='openrouter'):
+    if provider not in {'openrouter', 'elevenlabs'}:
+        raise ValueError('Unsupported credential provider')
+    variable = {'openrouter': 'OPENROUTER_API_KEY', 'elevenlabs': 'ELEVENLABS_API_KEY'}[provider]
+    if variable in os.environ:
+        return os.environ[variable]
     if sys.platform != 'darwin' or os.environ.get('F1_DISABLE_KEYCHAIN') == '1':
         return ''
     try:
-        value = native('read').decode('ascii')
+        value = (native('read') if provider == 'openrouter' else native('read', provider=provider)).decode('ascii')
     except (ValueError, UnicodeError):
         return ''
     return value if valid_key(value) else ''
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Manage the named OpenRouter Keychain item without printing its secret')
+    parser = argparse.ArgumentParser(description='Manage distinct provider Keychain items without printing secrets')
     parser.add_argument('action', choices=('store', 'status', 'delete'))
+    parser.add_argument('--provider', choices=('openrouter', 'elevenlabs'), default='openrouter')
     args = parser.parse_args(argv)
     try:
         value = None
         if args.action == 'store':
-            value = getpass.getpass('OpenRouter key (hidden): ') if sys.stdin.isatty() else sys.stdin.read(514).rstrip('\r\n')
+            value = getpass.getpass(args.provider+' key (hidden): ') if sys.stdin.isatty() else sys.stdin.read(514).rstrip('\r\n')
             if not valid_key(value):
-                raise ValueError('Invalid OpenRouter key format')
+                raise ValueError('Invalid provider key format')
             value = value.encode('ascii')
-        result = json.loads(native(args.action, value))
+        result = json.loads(native(args.action, value) if args.provider == 'openrouter'
+                            else native(args.action, value, provider=args.provider))
         if result.get('status') not in ('stored', 'available', 'missing', 'deleted'):
             raise ValueError('Invalid Keychain status')
         print(json.dumps({'status': result['status'], 'storage': 'macos_login_keychain'}))

@@ -9,15 +9,26 @@ func fail(_ status: OSStatus = -50) -> Never {
     exit(2)
 }
 let args = Array(CommandLine.arguments.dropFirst())
-guard args.count == 1 || args.count == 3 else { fail() }
+guard args.count >= 1 && args.count % 2 == 1 else { fail() }
 let action = args[0]
 guard ["store", "read", "status", "delete"].contains(action) else { fail() }
-var service = "org.f1-content.openrouter"
-if args.count == 3 {
-    guard args[1] == "--test-id", UUID(uuidString: args[2]) != nil else { fail() }
-    service = "org.f1-content.test." + args[2]
+var provider = "openrouter"
+var testId: String? = nil
+var flags = Set<String>()
+if args.count > 1 {
+    for index in stride(from: 1, to: args.count, by: 2) {
+        guard flags.insert(args[index]).inserted else { fail() }
+        if args[index] == "--provider" {
+            guard ["openrouter", "elevenlabs"].contains(args[index + 1]) else { fail() }
+            provider = args[index + 1]
+        } else if args[index] == "--test-id" {
+            guard UUID(uuidString: args[index + 1]) != nil else { fail() }
+            testId = args[index + 1]
+        } else { fail() }
+    }
 }
-let account = "openrouter"
+let service = testId.map { "org.f1-content.test." + $0 } ?? ("org.f1-content." + provider)
+let account = provider
 // Never trigger a hidden password dialog or unlock/change the user's Keychain.
 SecKeychainSetUserInteractionAllowed(false)
 var keychain: SecKeychain?
