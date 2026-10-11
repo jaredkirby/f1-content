@@ -8,9 +8,10 @@ from .core import ROOT, config, digest, log, now, probe, read_json, run, safe_re
 COMPANIONS={'captions','script','thumbnail'}
 QA_BASE_INPUTS={'data/processed/catalog.json','data/processed/editorial.json','outputs/manifest.json'}
 
-def legacy_release(manifest):
+def legacy_release(manifest, event_config=None):
     """Only the retained pre-versioned Sprint delivery predates render receipts."""
-    return (config()['id']=='2026-singapore-sprint'
+    selected=config() if event_config is None else event_config
+    return (selected['id']=='2026-singapore-sprint'
             and manifest.get('event_id')=='2026-singapore-sprint'
             and not manifest.get('run_id') and not manifest.get('input_hashes')
             and all(v.get('path')==f"outputs/singapore-sprint-2026-{v.get('format')}.mp4"

@@ -21,6 +21,11 @@
     "report",
     "run"
   ],
+  "explicit_model_work_commands": [
+    "feedback-record", "feedback-status", "preference-record", "preference-status",
+    "model-import", "model-route", "model-evaluate", "model-infer"
+  ],
+  "run_invokes_hosted_inference": false,
   "run_artifacts": [
     "runs/events.jsonl",
     "runs/stages/*.json"

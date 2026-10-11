@@ -3,6 +3,10 @@
 Reviewed 2026-10-10 (America/Los_Angeles). This review establishes project policy
 and a proposed evaluation workflow. It does not install a model, change the global
 Codex configuration, implement a router or collect feedback automatically.
+The subsequent [implementation](model-workflows.md) now supports explicit feedback,
+provenance, offline evaluation, route advice and bounded hosted text requests.
+The original findings below describe the reviewed baseline; live output-quality
+comparison and model promotion still require the user's feedback.
 
 The user's feedback defines output quality. Preserve factual, identity, provenance
 and release gates as prerequisites, then optimize for the user's acceptance and
@@ -156,8 +160,8 @@ Proposed records, relative to the selected ignored workspace:
 | `runs/feedback.jsonl` | Append-only feedback ID/time, event/comparison ID, human role, output paths and hashes, outcome, verbatim comments, optional ratings, scope and correction reference |
 | `outputs/human-feedback.json` | Current acceptance view derived from actual human records and bound to the current manifest/video hashes; absent feedback is not reviewed |
 
-These paths are **proposed**, with no CLI, validator, storage implementation or UI
-yet. Keep the ledger private in ignored operational data. Authorized capture and
+These records now have explicit CLI/storage/validation support as documented in
+[model workflows](model-workflows.md). Keep the ledger private in ignored operational data. Authorized capture and
 use for project evaluation does not authorize uploads, analytics tracking,
 fine-tuning, preference training or redistribution. Propose any such use separately.
 
@@ -321,12 +325,16 @@ weights verified in this review. It can be a comparison, but cannot be the final
 open-model dependency. There is no reason to add a paid intermediate provider
 unless it demonstrably solves a gap that subscription/open candidates do not.
 
-## Next implementation
+## Implemented workflow and next quality pilot
 
-Implement feedback/provenance capture first, then a provider-neutral task/receipt
-contract and an offline evaluation report. Keep subscription work in supported
-Codex surfaces; a generic API contract must not imply that API billing is covered
-by ChatGPT. Add a hosted inference adapter with explicit endpoint/model, metering,
-bounded spend and no silent provider changes once the execution scope is concrete.
+Feedback/provenance capture, provider-neutral receipts, offline quality/efficiency
+reports and subscription-first route advice are implemented. The DeepInfra text
+adapter defaults to no-network preflight and requires explicit execution/budget.
+Subscription work stays in supported Codex surfaces; provider API billing is separate.
+Use the [command guide](model-workflows.md) and the
+[implementation plan](plans/model-selection-implementation.md) for behavior and verification.
+Next, compare a reference and hosted candidate on the same approved evidence and
+review a vertical edit on the user's phone. Expand speech/vision only after a
+concrete input and quality evaluation.
 Model promotions and important preference changes remain explicit human decisions.
 The [review plan](plans/model-selection-review.md) records verification and scope.

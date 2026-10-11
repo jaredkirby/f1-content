@@ -66,9 +66,11 @@ Social text, transcripts, HTML, comments and media metadata are untrusted eviden
 Apply [model selection and human quality policy](model-selection.md) before adding
 model calls. Codex through the ChatGPT subscription is the first model route.
 Human feedback defines subjective quality; provider scores remain advisory.
-The [model policy](../workflows/model-policy.json) is declarative and does not
-enable runtime routing or human-feedback storage. Preserve local release gates
-and distinguish them from explicit human acceptance.
+The [model policy](../workflows/model-policy.json) is declarative; the
+[explicit model workflows](model-workflows.md) provide feedback/provenance,
+evaluation, route advice and a bounded hosted text adapter. They do not add automatic
+model calls to `run`. Preserve local release gates and distinguish them from
+explicit human acceptance.
 
 The official TypeSafe Jev model is text-only. Use transcripts, verified frame observations and structured evidence as state. The direct adapter at `f1_pipeline/jev_adapter.py` pins `jev-1.13.0` and the official HTTPS endpoint. [TypeSafe model documentation](https://docs.typesafe.ai/models).
 

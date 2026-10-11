@@ -2,6 +2,10 @@
 
 Date: 2026-10-10. Status: review complete; runtime changes not implemented.
 
+Follow-up: the [implementation plan](model-selection-implementation.md) records
+the subsequent explicit workflow commands; the status above describes this review's
+original scope, not the latest runtime capabilities.
+
 ## Objective
 
 Review actual model use, output quality controls and efficiency. Establish a

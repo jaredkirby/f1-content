@@ -55,7 +55,7 @@ def contracts(name,cfg):
             required.update(('outputs/manifest.json',authoritative_edl()))
     if name in ('validate','finalize'):
         required.add(authoritative_edl())
-    if name=='report':optional.add('outputs/qa.json')
+    if name=='report':optional.update(('outputs/qa.json','runs/feedback.jsonl'))
     if name=='timeline':optional.add('outputs/qa.json')
     return required,optional,set(outputs)
 

@@ -44,10 +44,14 @@ Read `docs/model-selection.md` for model choices and quality review. Prefer Code
 through ChatGPT subscription access first. Human feedback defines output quality;
 cost optimizations and open-model promotions must preserve that standard. Keep
 important editorial preferences, voice changes and model promotions in the human
-review loop. The model policy is declarative, not an implemented runtime router.
+review loop. The policy remains declarative; explicit model-work commands provide
+feedback, provenance, evaluation and hosted inference without an automatic router.
 Prioritize grounded storytelling for vertical phone consumption. Present one
 output for approve/reject comments; use A/B only for very different directions.
 Open-model candidates should use a quality API inference provider at a good price.
+For those commands, read `docs/model-workflows.md`. Read `docs/GLOSSARY.md` for
+quality terminology; local specs/plans live in `docs/plans/` as described in
+`docs/agents/issue-tracker.md`.
 
 When the user requests parallel agents, give each a bounded task and explicit
 file ownership. Use separate Git worktrees for independent code edits; shared

@@ -57,6 +57,14 @@ once. Do not repeatedly rerun identical tests without new changes or uncertainty
 Record actual results, including unavailable platform tools. A successful unit
 suite cannot prove an edited film is legible, audible or publishable.
 
+The installed Matt Pocock skills are pinned and recorded by the
+[model-work implementation plan](plans/model-selection-implementation.md).
+For this repository, their planning records use the existing local `docs/plans/`
+convention; see [local tracker rules](agents/issue-tracker.md) and
+[domain vocabulary](agents/domain.md). Use the relevant skills rather than loading
+the whole collection. The human confirmed CLI/workspace and synthetic hosted
+HTTP test boundaries for this implementation.
+
 ## Package verification
 
 ```sh

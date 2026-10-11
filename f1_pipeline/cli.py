@@ -5,11 +5,13 @@ import os
 from pathlib import Path
 
 def main(argv=None):
+    from .model_cli import COMMANDS, options
     parser = argparse.ArgumentParser(description="Evidence-first F1 session production pipeline (select workspace with F1_WORKSPACE or scripts/f1 --workspace)")
     parser.add_argument("--workspace", type=Path, help="Event directory (defaults to the working directory)")
-    parser.add_argument("command", choices=["doctor", "collect", "catalog", "analyze", "prepare-jev", "render", "validate", "finalize", "report", "timeline", "run"])
+    parser.add_argument("command", choices=["doctor", "collect", "catalog", "analyze", "prepare-jev", "render", "validate", "finalize", "report", "timeline", "run", *COMMANDS])
     parser.add_argument("--refresh", action="store_true", help="Explicitly refresh source downloads")
     parser.add_argument("--format", choices=["vertical", "landscape", "both"], default="both")
+    options(parser)
     args = parser.parse_args(argv)
     # Select before loading modules: each process owns exactly one workspace.
     selected = args.workspace or Path(os.environ.get("F1_WORKSPACE", Path.cwd()))
@@ -27,6 +29,15 @@ def main(argv=None):
         event_config = config()
     except (ValueError, OSError) as exc:
         parser.error(str(exc) + "; provide --workspace with a reviewed config/event.json")
+    if args.command in COMMANDS:
+        from .model_cli import run
+        try:
+            result = run(args)
+            print(json.dumps(result, indent=2, allow_nan=False))
+            provider = result.get('provider_result', result)
+            return 2 if provider.get('status') == 'failed' else 0
+        except (ValueError, OSError, RuntimeError) as exc:
+            parser.error(str(exc))
     if args.command == "doctor":
         print(json.dumps({"at": now(), "root": str(ROOT), "free_bytes": shutil.disk_usage(ROOT).free,
                           "config": event_config, "tools": {t: shutil.which(t) for t in ("ffmpeg", "ffprobe", "say")}}, indent=2))

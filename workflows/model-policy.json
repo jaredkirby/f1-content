@@ -1,6 +1,8 @@
 {
   "schema_version": "f1.workflow.model_policy.v1",
-  "status": "declarative_policy_runtime_not_implemented",
+  "status": "declarative_policy_with_explicit_workflow_commands",
+  "automatic_runtime_router_implemented": false,
+  "command_guide": "docs/model-workflows.md",
   "documentation": "docs/model-selection.md",
   "quality_authority": "explicit human feedback on exact output versions",
   "confirmed_preferences": {
@@ -44,7 +46,7 @@
     "story_editor": "subscription reference plus human brief and user review of important narrative choices",
     "assembly": "deterministic render with reviewed script; voice changes require listening feedback",
     "qa": "independent evidence review and technical checks; model scores do not imply human acceptance",
-    "release": "local release contracts remain implemented; human acceptance is a separate proposed milestone"
+    "release": "local release contracts remain implemented; hash-bound human acceptance is a separate explicitly recorded milestone"
   },
   "efficiency_candidates": {
     "bounded_text_tasks": ["gpt-6.1-sol at lower reasoning effort", "gpt-6-luna at high reasoning effort"],
@@ -69,8 +71,8 @@
     "new paid or external data-processing scope unless already authorized"
   ],
   "feedback_policy": {
-    "implemented": false,
-    "proposed_paths": [
+    "implemented": true,
+    "paths": [
       "research/event/preferences.json",
       "runs/model-evaluations/<comparison-id>/",
       "runs/feedback.jsonl",
@@ -85,6 +87,8 @@
     "training_or_upload_authorized": false
   },
   "open_model_goal": {
+    "hosted_text_adapter_implemented": true,
+    "live_quality_evaluation_executed": false,
     "serving": "hosted API inference; no local model installation target",
     "proposed_provider": "DeepInfra",
     "alternative_provider": "Together only if quality, reliability or accepted-output cost justifies it",
