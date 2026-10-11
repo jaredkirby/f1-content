@@ -19,8 +19,12 @@ Dependencies and external tools retain their own licenses:
 - [FFmpeg](https://ffmpeg.org/legal.html): licensing depends on the selected build
   and enabled components; installed separately, not distributed here.
 - macOS speech voices and fonts are platform resources, not bundled assets.
-- OpenF1 and TypeSafe are external services governed by their own terms; the
-  repository ships an authored client and rubrics, not their data or model weights.
+- OpenF1, TypeSafe, OpenRouter and OpenAI/Codex are external services governed
+  by their own terms; the repository ships authored clients and rubrics, not
+  provider data, credentials or model weights.
+- Official F1 live coverage and its Monterosa history are external source
+  material. Public retrieval and local draft generation do not establish reuse
+  or publication clearance.
 
 Research documents link to primary sources. Local snapshots retained during
 research are excluded from both Git and Python package builds.

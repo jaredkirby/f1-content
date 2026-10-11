@@ -5,6 +5,12 @@ explicit feedback, provenance, route advice, offline evaluation and a hosted tex
 adapter. They preserve the distinction between local release and human acceptance.
 Run every command against one explicit event workspace. Private records stay there.
 
+These commands describe the `Live` checkout. Later `main` adds native
+OpenRouter Jev, bounded job plans, consent-bound macOS Keychain storage and
+higher execution limits. See [project state](project-state.md) before using
+commands or limits from that branch. The explicit [live feed](live-feed.md)
+is a separate subscription-backed path, not the hosted API adapter below.
+
 ## Start with the subscription reference
 
 ```sh

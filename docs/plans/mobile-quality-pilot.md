@@ -2,6 +2,11 @@
 
 Date: 2026-10-10. Status: subscription reference ready; awaiting human feedback.
 
+The unexecuted-candidate statements below describe this initial checkpoint.
+The corrected request subsequently ran and produced the
+[candidate film](openrouter-candidate-film.md). The newer `main` review output
+and outstanding acceptance checks are recorded in [project state](../project-state.md).
+
 ## Objective
 
 Produce one grounded, phone-first vertical edit for the user's approve/reject

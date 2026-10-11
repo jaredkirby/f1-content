@@ -63,9 +63,11 @@ release checks remain distinct from human acceptance.
 - The report includes rejected/failed attempts and incomplete measurements.
   Cost per accepted output is undefined if there are no accepted outputs or the
   actual total is unknown. Attribution is explicit, not proof of causality.
-- The first hosted slice is text evidence/generation at the official DeepInfra
-  chat endpoint and four reviewed open-model IDs. The execution path uses a capped
-  response, fixed standard tier, one request, no redirects or silent retry/fallback.
+- The initial implementation used DeepInfra and four reviewed text-model IDs.
+  The subsequent [OpenRouter migration](openrouter-inference.md) replaces that
+  active slice with one pinned DeepSeek text route. Historical provider receipts
+  retain their original identities and rates. Execution remains bounded, with
+  no redirects or silent retry/fallback.
 - A conservative preflight prices the full documented context plus capped output
   at dated uncached rates. It is a bound under those rates, not a token prediction
   or promise about provider price changes or a settled bill.

@@ -6,6 +6,11 @@ This project turns a bounded collection of public source records, local media an
 
 The first Sprint run used Codex research agents for event reporting, media discovery and Jev integration research. A deterministic local Python runner then downloads configured data, catalogs assets, analyzes records, renders edits, validates results and builds the report. `workflows/agents.json` defines responsibilities and handoffs; it is a declarative task specification, not a background agent service. `scripts/f1 run` does not search the web, launch new AI agents or perform Jev inference automatically. Its receipts are evidence of work actually executed.
 
+The [project state review](project-state.md) distinguishes this checkout from
+newer `main` integrations. The separate [live feed](live-feed.md) uses
+`config/live.json`, official blog evidence and explicit subscription-backed drafts;
+it does not populate these film contracts or run through `run`.
+
 ## Stage ownership and handoffs
 
 | Stage | Owner and operation | Input | Output and acceptance |
@@ -152,4 +157,5 @@ Changing the config alone is insufficient: media discovery/collectors, source re
 
 Success means traceable files and a usable local edit for the declared scope. It never means every public or social F1 video on the internet has been found. Coverage counts, inaccessible sources, unreviewed footage and unavailable models remain visible in the report.
 
-New releases require current technical, editorial, visual and audio receipts before `finalize`. Controlled historical Sprint compatibility preserves its pre-versioned delivery; it is not an exemption for new workspace outputs. Both Site deployments are private and active; each is backed by its native deployment receipt. See [qualifying-workflow-hardening.md](history/qualifying-workflow-hardening.md) for current gates and tested contracts and completed release evidence.
+New releases require current technical, editorial, visual and audio receipts before `finalize`. Controlled historical Sprint compatibility preserves its pre-versioned delivery; it is not an exemption for new workspace outputs. Both Site deployments have retained successful private deployment receipts.
+The project-state review did not recheck their current hosted availability. See [qualifying-workflow-hardening.md](history/qualifying-workflow-hardening.md) for current gates and tested contracts and completed release evidence.

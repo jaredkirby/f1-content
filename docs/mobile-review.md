@@ -58,8 +58,12 @@ Update `runs/pilot/review-destination.json` with the literal native URL and
 ./scripts/f1 --workspace /absolute/path/to/event review-site-status
 ```
 
-This returns exit 2 until current evidence, Site source version and successful
-private deployment agree. Re-preparation resets the handoff status. Do not hand
+This returns exit 2 until current event assets and hash-bound operator browser
+evidence agree with a successful private deployment receipt, including its source
+commit. It validates saved evidence; it does not inspect the current Site checkout
+or perform a fresh hosted request. Operators must test the actual deployed version
+and replace receipts after a new publication. Local edits alone do not change an
+immutable deployment. Re-preparation resets the handoff status. Do not hand
 off a local HTML placeholder as a tested mobile destination. Do not manufacture
 browser results, user decisions or native publication evidence.
 

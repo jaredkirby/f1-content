@@ -6,7 +6,9 @@ Codex configuration, implement a router or collect feedback automatically.
 The subsequent [implementation](model-workflows.md) now supports explicit feedback,
 provenance, offline evaluation, route advice and bounded hosted text requests.
 The original findings below describe the reviewed baseline; live output-quality
-comparison and model promotion still require the user's feedback.
+comparison and model promotion still require the user's feedback. See
+[project state](project-state.md) for later implemented `main` capabilities and
+the latest retained review output; their presence does not imply promotion.
 
 The user's feedback defines output quality. Preserve factual, identity, provenance
 and release gates as prerequisites, then optimize for the user's acceptance and
@@ -38,8 +40,8 @@ film was watched or new model inference performed during this review.
 ## What is implemented and what was observed
 
 Discovery, event research and editorial choices are Codex-assisted activities.
-`workflows/agents.json` is declarative: the Python runner does not launch agents,
-discover the web, route models or invoke Jev. Collection, hash checks, asset
+`workflows/agents.json` is declarative: the production `run` command does not
+launch agents, discover the web, route models or invoke Jev. Collection, hash checks, asset
 deduplication, reviewed-interval checks, arithmetic, rendering and release checks
 use local code. Keep those deterministic operations in code.
 
@@ -93,7 +95,7 @@ not a runtime router.
    the choice to wait or use an already approved route. Never silently purchase
    credits, consume a reset, switch billing or lower quality.
 
-`codex login status` currently reports ChatGPT sign-in. OpenAI documents separate
+At the 10 October review, `codex login status` reported ChatGPT sign-in. OpenAI documents separate
 ChatGPT subscription access and API-key billing. Subscription use is limited and
 shares account usage; it is not free/unlimited API access. Use official clients
 and their supported auth paths. Do not extract subscription tokens for a generic
@@ -151,7 +153,7 @@ records rather than overwrite their history. Do not infer taste from clicks or
 playback duration. Optional usage feedback such as device, observed segment and
 revision time should be explicit and minimal; unobserved values remain null.
 
-Proposed records, relative to the selected ignored workspace:
+Implemented record paths, relative to the selected ignored workspace:
 
 | Record | Required meaning |
 |---|---|

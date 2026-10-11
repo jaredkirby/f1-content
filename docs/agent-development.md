@@ -75,8 +75,9 @@ HTTP test boundaries for this implementation.
 For a release, install that wheel in a new temporary environment, change to a
 directory outside the checkout, and run the installed CLI against the synthetic
 workspace. Confirm packaged CSS, JavaScript, Jev rubrics and mobile review Site
-templates can be loaded there. `check_wheel.py` also runs mobile preparation and
-readiness regressions against the unpacked wheel from outside the source checkout.
+templates and live report HTML can be loaded there. `check_wheel.py` also runs
+mobile preparation/readiness and synthetic live-feed regressions against the
+unpacked wheel from outside the source checkout.
 This catches accidental reliance on ignored research files or editable-install
 paths. Review both the Git index and wheel contents before release.
 

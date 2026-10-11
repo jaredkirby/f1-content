@@ -2,6 +2,10 @@
 
 Status: review and fixes complete in this changeset. Date: 2026-10-10.
 
+The branch inventory and verification below are pinned to 10 October. They
+do not describe the current `Live`/`main` topology. See
+[project state](../project-state.md) for the local-ref review on 11 October.
+
 ## Scope
 
 The requested "wall branches" is interpreted as all branches. GitHub and the local

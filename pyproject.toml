@@ -26,4 +26,4 @@ f1-jev = "f1_pipeline.jev_adapter:main"
 include = ["f1_pipeline*"]
 
 [tool.setuptools.package-data]
-f1_pipeline = ["resources/*.json", "resources/*.css", "resources/*.js", "resources/mobile-review-site/**/*"]
+f1_pipeline = ["resources/*.html", "resources/*.json", "resources/*.css", "resources/*.js", "resources/mobile-review-site/**/*"]

@@ -5,6 +5,11 @@ are relative to that directory; stored manifests must not repeat its outer path.
 Use an absolute external directory or an ignored `workspaces/<event-id>/` directory
 for new work. Existing local Singapore archives remain where they were created.
 
+For official live-blog collection, use the separate [live feed](live-feed.md)
+workspace contract with `config/live.json`; those records are not film inputs
+until explicitly researched and reviewed. [Project state](project-state.md)
+identifies which newer `main` commands are absent from this checkout.
+
 ## Prepare inputs
 
 Copy the *shape* of `examples/synthetic/config/event.json`, replace every fictional
