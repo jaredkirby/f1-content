@@ -1,6 +1,6 @@
 # Correct the pilot's JSON request
 
-Date: 2026-10-10. Status: implementation complete; corrected candidate awaits another authorized call.
+Date: 2026-10-10. Status: corrected call approved; reopening the mobile handoff.
 
 ## Objective and decisions
 
@@ -34,3 +34,19 @@ The targeted hosted suite passed all 22 tests. The shared offline check passed
 request passes preflight with the unchanged ceiling and has not executed. The
 original missing-instruction request now fails preflight. Model evaluation retains
 one failed hosted attempt, unknown metering and no human-approved outputs.
+
+The human approved the corrected request and authorized a cap increase if needed.
+The current request needs no increase. Bind the new work ID, prompt and rubric
+versions to this authorization; preserve the first attempt. The one-shot helper
+can verify these bindings offline without touching the handoff, and still refuses
+any existing intent before key pickup. Reopen and privately publish the existing
+mobile form for this new operation, then execute when the human resubmits the key.
+
+Verification passed: 151 shared offline tests, two new helper binding regressions,
+four encryption tests, local synthetic HTTP handoff and current phone form checks.
+The production workspace's corrected work passes offline binding verification.
+TypeScript/build passed; the exact Site source was privately published with its
+existing runtime revision and audience. Client bundles contain no secret names.
+Private native deployment/check receipts retain the current source/operation hashes.
+The temporary form now awaits a new key; approval is already recorded and will
+not be requested again for this corrected request.

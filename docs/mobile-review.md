@@ -103,6 +103,12 @@ verifies current authorization/output bindings and refuses existing run evidence
 before consuming a key. It sets the inference child's environment directly and
 redacts the key from output; it never writes a credential file.
 
+A corrected request uses a new work ID and authorization bound to that work ID,
+comparison, prompt/rubric versions and request bytes. `verify-execution` mode checks
+those bindings offline without reading the handoff or calling a provider. Keep
+prior failed/interrupted work intact; creating a new ID does not itself authorize
+another call. Record the actual human approval first.
+
 If an operator session loses its token, renew that operation token through native
 runtime settings for the actual authorized pickup, preserving the encryption key
 and deploying the existing private version. Do not rotate merely to inspect state.
