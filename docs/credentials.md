@@ -52,6 +52,26 @@ consumer checks the bound operation and storage choice, saves the key first and
 then runs the declared plan. Neither the Site source nor event receipts contain
 plaintext credentials.
 
+Storage consent is required in every submission and is included in authenticated
+ciphertext metadata. Operation IDs append `:transient-v1` or `:keychain-v1` to the
+first 24 hex characters of the authorized plan hash (or single-run authorization
+hash). The Site configuration and collector input must explicitly supply the same
+boolean `persistKeychain` and matching ID. A setting change creates a different
+operation: stale pages and pending handoffs cannot inherit the new choice.
+Legacy unbound IDs/ciphertexts are rejected; upgrading the Site templates requires
+a fresh submission for any pending key. Preparing a single-run review Site defaults
+to explicit transient storage. No deployment is performed by source updates.
+
+For the synthetic encrypted-handoff and route checks (Node 22.15+):
+
+```sh
+npm --prefix tests/mobile ci --ignore-scripts --no-audit --no-fund
+npm --prefix tests/mobile test
+```
+
+These tests use fictional credentials and an in-memory SQLite database. CI runs
+them separately from the offline Python suite; no Site or provider is contacted.
+
 ## Execution limits
 
 Plans support up to 64 declared jobs; text requests support 65,536 output tokens

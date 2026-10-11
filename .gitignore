@@ -52,3 +52,6 @@ htmlcov/
 *.zip
 *.tar
 *.gz
+
+# Isolated mobile contract-test dependencies.
+node_modules/

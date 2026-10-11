@@ -48,7 +48,7 @@ def inspect_blob(path, mode, blob):
         issues.append("outside source allowlist")
     if mode not in ("100644", "100755"):
         issues.append("symlinks, submodules and unresolved entries are forbidden")
-    if any(part in {".git", ".openai", ".codex", ".venv", "__pycache__"}
+    if any(part in {".git", ".openai", ".codex", ".venv", "__pycache__", "node_modules"}
            or part.startswith('.env') or part == 'AGENTS.override.md' for part in p.parts):
         issues.append("local configuration or runtime path")
     if p.suffix.lower() in FORBIDDEN_SUFFIXES:

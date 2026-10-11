@@ -129,7 +129,7 @@
     "jev_provider": "typesafe",
     "provider_fallbacks": false,
     "automatic_retries": false,
-    "max_jobs": 16,
+    "max_jobs": 64,
     "plan_budget_required": true,
     "quality_promotion": false
   }

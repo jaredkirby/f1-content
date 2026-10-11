@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Check, Eye, EyeOff, KeyRound, LockKeyhole } from "lucide-react";
-type Operation = { id: string; enabled: boolean; model: string; budgetUsd: number | null; maxCalls?: number; plannedCalls?: number; persistKeychain?: boolean };
+type Operation = { id: string; enabled: boolean; model: string; budgetUsd: number | null; maxCalls?: number; plannedCalls?: number; persistKeychain: boolean };
 type Handoff = { id: string; status: "pending" | "consumed" | "expired"; expiresAt: number };
 
 export default function KeyEntry({ operation }: { operation: Operation }) {
@@ -25,7 +25,7 @@ export default function KeyEntry({ operation }: { operation: Operation }) {
     if (pending.current?.key !== value) pending.current = { key: value, id: crypto.randomUUID() };
     try {
       const response = await fetch("/api/credential", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: value, requestId: pending.current.id, operationId: operation.id }) });
+        body: JSON.stringify({ key: value, requestId: pending.current.id, operationId: operation.id, persistKeychain: operation.persistKeychain }) });
       const data = await response.json() as { item: Handoff; error?: string };
       if (!response.ok) throw new Error(data.error || "The key could not be sent.");
       setHandoff(data.item); setKey(""); setVisible(false); pending.current = null;

@@ -1,5 +1,6 @@
 // One-shot credential pickup. Secrets use hidden stdin and optional native Keychain storage.
 import fs from 'node:fs';
+import {storageOperationId} from '../f1_pipeline/resources/mobile-review-site/lib/credential-operation.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
@@ -44,7 +45,7 @@ try {
       'model-run','--request',requestPath],{cwd:project,encoding:'utf8',timeout:20000,maxBuffer:4000000});
     if(preview.status!==0)throw new Error('Plan preflight failed.');
     const result=JSON.parse(preview.stdout);
-    if(sha!==input.requestSha256||input.operationId!==sha.slice(0,24)||result.budget_usd!==input.budgetUsd||
+    if(sha!==input.requestSha256||input.operationId!==storageOperationId(sha.slice(0,24),input.persistKeychain)||result.budget_usd!==input.budgetUsd||
        result.max_calls!==input.maxCalls||result.preflight_ceiling_usd>input.budgetUsd)throw new Error('Plan handoff bindings changed.');
     if(fs.existsSync(path.join(root,'runs/model-plans',result.plan_id)))throw new Error('Plan already attempted.');
     const plan=JSON.parse(fs.readFileSync(requestPath,'utf8'));
@@ -70,7 +71,7 @@ try {
     if(authorization.source?.kind!=='human'||authorization.max_calls!==1||authorization.provider!=='openrouter'||
        authorization.model!==active.model||authorization.request_binding.sha256!==active.request.sha256||authorization.budget_usd!==input.budgetUsd)
       throw new Error('A current bounded human authorization is required.');
-    if(input.operationId!==active.spending_authorization.sha256.slice(0,24))throw new Error('The operation changed.');
+    if(input.operationId!==storageOperationId(active.spending_authorization.sha256.slice(0,24),input.persistKeychain))throw new Error('The operation changed.');
     workId=active.work_id??'openrouter-candidate-v1';
     if(!/^[a-z0-9][a-z0-9_-]{0,99}$/.test(workId)||!/^[a-z0-9][a-z0-9_-]{0,99}$/.test(state.comparison_id))
       throw new Error('Invalid work identity.');
@@ -114,7 +115,7 @@ try {
     if(handoff.operationId!==input.operationId||handoff.requestSha256!==input.requestSha256||
        handoff.budgetUsd!==input.budgetUsd||(planMode&&handoff.maxCalls!==input.maxCalls)||typeof handoff.key!=='string'||!handoff.key||
        handoff.key.length>512||! /^[!-~]+$/.test(handoff.key))throw new Error('Credential handoff bindings changed.');
-    if((input.persistKeychain===true)!==(handoff.persistKeychain===true))throw new Error('Storage consent binding changed.');
+    if(typeof input.persistKeychain!=='boolean'||handoff.persistKeychain!==input.persistKeychain)throw new Error('Storage consent binding changed.');
     if(input.mode==='verify-local') {
       if(handoff.key!=='synthetic-mobile-key')throw new Error('Local verification accepts only its synthetic fixture.');
       process.stdout.write(JSON.stringify({status:'verified_local_handoff',inference_attempted:false})+'\n');

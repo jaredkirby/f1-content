@@ -1,9 +1,13 @@
 // A temporary encrypted handoff. Never include plaintext keys in diagnostics.
 export const HANDOFF_TTL_MS = 30 * 60 * 1000;
-export type BoxContext = { operationId: string; userId: string; requestId: string };
+export type BoxContext = { operationId: string; userId: string; requestId: string; persistKeychain: boolean };
 const encode = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
 const decode = (text: string) => Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
-const aad = (context: BoxContext) => new TextEncoder().encode(JSON.stringify(context));
+const aad = (context: BoxContext) => {
+  if (typeof context.persistKeychain !== "boolean") throw new Error("Unbound storage choice.");
+  return new TextEncoder().encode(JSON.stringify({operationId: context.operationId,
+    userId: context.userId, requestId: context.requestId, persistKeychain: context.persistKeychain}));
+};
 async function encryptionKey(secret: string) {
   const bytes = decode(secret);
   if (bytes.length !== 32) throw new Error("Credential handoff is unavailable.");

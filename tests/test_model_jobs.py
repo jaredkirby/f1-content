@@ -75,6 +75,23 @@ with patch('urllib.request.build_opener',return_value=Transport()):
         return subprocess.run([sys.executable,'-B','-c',script,'--workspace',str(root),*args],
                               env=env,cwd=PROJECT,text=True,capture_output=True)
 
+    def test_policy_job_limit_matches_runtime_boundary(self):
+        policy=json.loads((PROJECT/'workflows/model-policy.json').read_text())
+        limit=policy['explicit_orchestration']['max_jobs']
+        self.assertEqual(limit,64)
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);path=self.fixture(root)
+            plan=json.loads(path.read_text());job=plan['jobs'][0]
+            plan['jobs']=[{**job,'id':f'claim-{i}'} for i in range(limit)]
+            plan.update(max_calls=limit,budget_usd=100)
+            path.write_text(json.dumps(plan))
+            result=self.invoke(root,'model-run','--request',str(path))
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout)['calls'],limit)
+            plan['jobs'].append({**job,'id':'one-too-many'})
+            plan['max_calls']=limit+1;path.write_text(json.dumps(plan))
+            self.assertNotEqual(self.invoke(root,'model-run','--request',str(path)).returncode,0)
+
     def test_jev_cli_preflight_uses_openrouter_without_a_second_provider_key(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);self.fixture(root)

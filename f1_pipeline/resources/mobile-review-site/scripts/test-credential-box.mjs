@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {sealKey,openKey,matchesOperatorToken} from '../lib/credential-box.ts';
+import {storageOperationId,matchesStorageOperation} from '../lib/credential-operation.mjs';
 import {readBoundedBody} from '../lib/bounded-body.ts';
 const secret=Buffer.alloc(32,7).toString('base64'); // Synthetic encryption fixture.
-const context={operationId:'synthetic-operation',userId:'synthetic-user',requestId:'synthetic-request'};
+const context={operationId:'synthetic-operation',userId:'synthetic-user',requestId:'synthetic-request',persistKeychain:false};
 const key='synthetic-provider-key';
 
 test('encrypted handoff round-trips without storing plaintext',async()=>{
@@ -30,4 +31,26 @@ test('invalid credentials and operator tokens fail without secret diagnostics',a
 test('body reader enforces bytes across chunks before unbounded allocation',async()=>{
   assert.equal(await readBoundedBody(new Request('https://example.invalid',{method:'POST',body:'hello'}),5),'hello');
   await assert.rejects(readBoundedBody(new Request('https://example.invalid',{method:'POST',body:'too long'}),4));
+});
+
+test('handoffs bind storage choice and refuse legacy unbound contexts',async()=>{
+  const {persistKeychain, ...legacy} = context;
+  await assert.rejects(sealKey(key,secret,legacy));
+  const box=await sealKey(key,secret,context);
+  await assert.rejects(openKey(box.ciphertext,box.iv,secret,{...context,persistKeychain:true},200,100));
+});
+
+test('stale phone storage choices and unchanged IDs under a new setting fail closed',()=>{
+  const base='0123456789abcdef01234567';
+  for (const before of [false,true]) {
+    const old={id:storageOperationId(base,before),persistKeychain:before};
+    const submission={operationId:old.id,persistKeychain:before};
+    assert.equal(matchesStorageOperation(old,submission),true);
+    assert.equal(matchesStorageOperation({...old,persistKeychain:!before},submission),false);
+    const changed={id:storageOperationId(base,!before),persistKeychain:!before};
+    assert.notEqual(changed.id,old.id);
+    assert.equal(matchesStorageOperation(changed,submission),false);
+    assert.equal(matchesStorageOperation(changed,{operationId:changed.id,persistKeychain:before}),false);
+    assert.equal(matchesStorageOperation(changed,{operationId:changed.id}),false);
+  }
 });
