@@ -4,6 +4,9 @@ Reconciled 2026-10-11 against source `043aa03` and saved local verification.
 Historical measurements remain in each plan. A completed implementation does not
 establish hosted interactive verification, human acceptance or model promotion.
 The [remaining-work plan](remaining-implementation.md) owns current assignments.
+The [evaluation-results continuation](quality-evaluation-results.md) owns the next
+offline source pass. First-wave source was committed as `034ed1c`; the independent
+phone consent update was committed locally as `38caf16` and remains unpublished.
 
 | Record | Current assessment |
 | --- | --- |
@@ -30,11 +33,14 @@ The [remaining-work plan](remaining-implementation.md) owns current assignments.
 | [Live/main integration](live-main-integration.md) | Complete; merge and push followed by CI repair |
 | [Branch preservation audit](branch-preservation-audit.md) | Complete; repair `043aa03` has saved successful five-job CI receipt |
 | [Remaining implementation: first wave](remaining-implementation.md) | Story contracts and offline protocol tooling integrated; Site source prepared; delivery/human gates pending |
+| [Evaluation results](quality-evaluation-results.md) | Implemented/tested on isolated branch `53b082e`; main integration pending alongside concurrent voice work |
 
 ## Verification limits
 
 The final branch receipt is `runs/branch-preservation-audit/final-verification.json`;
-its CI run is `38151146541`. It matches current local HEAD. Remote services were
+its CI run is `38151146541`. It matches audited revision `043aa03`, not the newer
+first-wave source commit. That local implementation passed offline/wheel checks;
+its hosted CI has not run because it was not pushed. Remote services were
 not refreshed for this reconciliation's branch assessment. Latest film records
 retain `feedback_status: not_reviewed`. Current hosted browser follow-through
 loaded the protected feedback UI and verified playback, pause and seek;
