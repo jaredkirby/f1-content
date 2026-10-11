@@ -47,16 +47,17 @@ fixture in [the CLI tests](../tests/test_model_jobs.py) demonstrates the complet
 shape, execution, stale-evidence rejection and review.
 
 Preview validates every input without a credential, network call or execution
-directory. There are at most 16 jobs, and the total budget must cover the sum of
+directory. There are at most 64 jobs, and the total budget must cover the sum of
 their conservative full-context cost ceilings. Byte limits are not token counts.
 
 ## Execute once and review
 
-After configuring `OPENROUTER_API_KEY` securely in the executing process:
+After saving a key in [macOS Keychain](credentials.md), or configuring
+`OPENROUTER_API_KEY` securely in the executing process:
 
 ```sh
 ./scripts/f1 --workspace /absolute/path/to/event model-run \
-  --request requests/plan.json --execute --timeout-seconds 60
+  --request requests/plan.json --execute --timeout-seconds 300
 ./scripts/f1 --workspace /absolute/path/to/event model-review --request requests/plan.json
 ./scripts/f1 --workspace /absolute/path/to/event model-evaluate --comparison-id qualifying-claims-v1
 ```
@@ -65,8 +66,9 @@ Keep credentials out of arguments, committed files and chat. The optional phone
 helper supports `verify-plan` and `execute-plan` through hidden stdin; its private
 Site operation binds the plan hash, budget and maximum calls. The helper passes
 `--expected-plan-sha256` to Python so replacement after key pickup cannot change
-the authorized work. Its API key stays in
-process memory and the one-time encrypted handoff is cleared when consumed.
+the authorized work. When persistent storage is selected, both sides must agree and the helper saves
+the key to login Keychain before execution. Otherwise the key remains transient.
+The encrypted handoff is cleared when consumed. See [credential storage](credentials.md).
 
 The runner saves intent before calling the provider, carries prior accepted
 results into the draft as untrusted advisory data, and saves immutable model-work

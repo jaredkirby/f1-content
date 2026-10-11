@@ -207,3 +207,16 @@ with patch('urllib.request.build_opener',return_value=Transport()):
             self.assertNotEqual(result.returncode,0)
             self.assertIn('authorized plan',result.stderr)
             self.assertFalse((root/'runs/model-plans').exists())
+
+    def test_larger_validation_plan_has_explicit_finite_call_and_budget_limits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);plan=self.fixture(root)
+            data=json.loads(plan.read_text());base=data['jobs'][0]
+            data.update(jobs=[{**base,'id':f'claim-{i}'} for i in range(32)],max_calls=64,budget_usd=10)
+            plan.write_text(json.dumps(data))
+            result=self.invoke(root,'model-run','--request',str(plan))
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout)['calls'],32)
+            self.assertFalse((root/'runs/model-plans').exists())
+            data['max_calls']=65;plan.write_text(json.dumps(data))
+            self.assertNotEqual(self.invoke(root,'model-run','--request',str(plan)).returncode,0)

@@ -103,8 +103,11 @@ token in session memory and pass it through hidden stdin to
 `scripts/run_mobile_candidate.mjs`, along with the native Site service credential,
 exact operation/request hash, event workspace and approved budget. The helper
 verifies current authorization/output bindings and refuses existing run evidence
-before consuming a key. It sets the inference child's environment directly and
-redacts the key from output; it never writes a credential file.
+before consuming a key. With persistent storage selected, local and Site choices
+must agree; it saves to [macOS login Keychain](credentials.md) before inference.
+The child reads the saved item without a secret environment variable. Legacy
+transient operation sets the child environment directly. Both modes redact the
+key from output and never write a plaintext credential file.
 
 A corrected request uses a new work ID. Every execution requires authorization
 bound to its work ID, comparison, prompt/rubric versions and request bytes,

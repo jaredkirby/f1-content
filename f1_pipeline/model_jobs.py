@@ -43,9 +43,9 @@ def preflight_plan(path):
         raise ValueError('Model plan requires its exact event configuration')
     verify_binding(plan['event_binding'])
     jobs = plan.get('jobs')
-    if (not isinstance(jobs, list) or not 1 <= len(jobs) <= 16
-            or type(plan.get('max_calls')) is not int or not len(jobs) <= plan['max_calls'] <= 16):
-        raise ValueError('A plan requires 1 to 16 jobs within its explicit call limit')
+    if (not isinstance(jobs, list) or not 1 <= len(jobs) <= 64
+            or type(plan.get('max_calls')) is not int or not len(jobs) <= plan['max_calls'] <= 64):
+        raise ValueError('A plan requires 1 to 64 jobs within its explicit call limit')
     budget = plan.get('budget_usd')
     if type(budget) not in (int, float) or not 0 < budget <= 1000000:
         raise ValueError('Plan budget must be finite, positive and bounded')
@@ -94,8 +94,8 @@ def run_plan(args):
         raise ValueError('The authorized plan has changed; no execution permitted')
     if not args.execute:
         return preview
-    if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 60:
-        raise ValueError('Transport timeout must be positive and at most 60 seconds')
+    if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 300:
+        raise ValueError('Transport timeout must be positive and at most 300 seconds')
     if args.budget_usd is not None and args.budget_usd != plan['budget_usd']:
         raise ValueError('Execution budget must match the reviewed plan')
     directory = safe_relative('runs/model-plans/'+plan['plan_id'])

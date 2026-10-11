@@ -84,7 +84,7 @@ class HostedInferenceTests(unittest.TestCase):
                    {**request_payload(), "model": []},
                    {**request_payload(), "max_tokens": True},
                    {**request_payload(), "max_tokens": 0},
-                   {**request_payload(), "max_tokens": 16385},
+                   {**request_payload(), "max_tokens": 65537},
                    {**request_payload(), "stream": True},
                    {**request_payload(), "service_tier": "priority"},
                    {**request_payload(), "messages": []},
@@ -122,7 +122,7 @@ class HostedInferenceTests(unittest.TestCase):
             hosted_inference.preflight({**request_payload(),'reasoning':{'enabled':False},'reasoning_effort':'high'})
 
     def test_only_openrouter_environment_credential_is_used(self):
-        with patch.dict(os.environ, {'DEEPINFRA_API_KEY':'legacy-test-key'}, clear=True):
+        with patch.dict(os.environ, {'DEEPINFRA_API_KEY':'legacy-test-key','F1_DISABLE_KEYCHAIN':'1'}, clear=True):
             receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,opener=OfflineOpener())
             self.assertFalse(receipt['inference_attempted'])
             self.assertEqual(receipt['error']['code'],'credential_unavailable')
@@ -203,7 +203,7 @@ class HostedInferenceTests(unittest.TestCase):
                  {"execute": True, "budget_usd": 0.001},
                  {"execute": True, "budget_usd": 1, "timeout": True},
                  {"execute": True, "budget_usd": 1, "timeout": 0},
-                 {"execute": True, "budget_usd": 1, "timeout": 61}]
+                 {"execute": True, "budget_usd": 1, "timeout": 301}]
         for options in cases:
             with self.subTest(options=options), self.assertRaises(hosted_inference.HostedInferenceError):
                 hosted_inference.evaluate(request_payload(), opener=OfflineOpener(), **options)
@@ -438,6 +438,17 @@ class HostedInferenceTests(unittest.TestCase):
         self.assertEqual([request.full_url for request in requests], [hosted_inference.ENDPOINT])
         self.assertEqual(receipt["response_sha256"], hashlib.sha256(raw).hexdigest())
         self.assertNotIn("private-redirect-body", json.dumps(receipt))
+
+    def test_generous_reasoning_output_and_transport_allowances_remain_bounded(self):
+        payload={**request_payload(),'max_tokens':65536}
+        preview=hosted_inference.preflight(payload,budget_usd=10)
+        self.assertAlmostEqual(preview['cost']['preflight_ceiling_usd'],0.393216)
+        opener=SyntheticOpener(SyntheticResponse(json.dumps(provider_response()).encode()))
+        receipt=hosted_inference.evaluate(payload,execute=True,budget_usd=10,api_key='synthetic-key',timeout=300,opener=opener)
+        self.assertTrue(receipt['accepted_model_result'])
+        self.assertEqual(opener.requests[0][1],300)
+        for changed in ({**payload,'max_tokens':65537},{**payload,'max_tokens':True}):
+            with self.assertRaises(ValueError): hosted_inference.preflight(changed)
 
 
 if __name__ == "__main__":

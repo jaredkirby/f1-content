@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       .returning({ id: mobileCredentials.id });
     if (!claimed[0]) return respond({ status: "already_collected" }, 409);
     return respond({ status: "collected", key, operationId: operation.id,
-      requestSha256: operation.requestSha256, budgetUsd: operation.budgetUsd, handoffId: row.id });
+      requestSha256: operation.requestSha256, budgetUsd: operation.budgetUsd, maxCalls: 'maxCalls' in operation ? operation.maxCalls : 1,
+      persistKeychain: 'persistKeychain' in operation && operation.persistKeychain === true, handoffId: row.id });
   } catch { return respond({ error: "Credential handoff could not be opened." }, 409); }
 }

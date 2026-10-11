@@ -249,7 +249,7 @@ claiming an unreported precision or runtime fingerprint. [Routing contract](http
 
 Public metadata checked on 2026-10-10 lists a 1,048,576-token context and low/high/max
 reasoning efforts. The adapter explicitly starts at high effort, remains text-only,
-and caps output at 16,384 tokens. Image capability advertised by the model is not
+and caps output at 65,536 tokens. Image capability advertised by the model is not
 an implemented upload or viewing workflow. [Model catalog](https://openrouter.ai/api/v1/models).
 
 | Candidate route | Peak input / output / cached input per 1M tokens | Quality status |

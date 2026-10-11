@@ -5,7 +5,7 @@ Contract/rates: docs/openrouter-jev-integration-research.md (2026-10-10).
 from datetime import datetime, timezone
 import hashlib
 import json
-import os
+from .credentials import resolve_api_key
 import re
 import time
 import urllib.error
@@ -49,14 +49,14 @@ def preflight(payload, *, budget_usd=None):
 
 
 def evaluate(payload, *, execute=False, budget_usd=None, api_key=None, timeout=20, opener=None):
-    if type(execute) is not bool or not number(timeout, 0.001, 60):
-        raise ValueError('Execution must be explicit and transport timeout bounded by 60 seconds')
+    if type(execute) is not bool or not number(timeout, 0.001, 300):
+        raise ValueError('Execution must be explicit and transport timeout bounded by 300 seconds')
     receipt = preflight(payload, budget_usd=budget_usd)
     if not execute:
         return receipt
     if budget_usd is None or budget_usd < receipt['cost']['preflight_ceiling_usd']:
         raise ValueError('Execution requires budget covering the full-context ceiling')
-    key = os.environ.get('OPENROUTER_API_KEY', '') if api_key is None else api_key
+    key = resolve_api_key() if api_key is None else api_key
     if not isinstance(key, str) or not 1 <= len(key) <= 512 or any(not 33 <= ord(c) <= 126 for c in key):
         receipt.update(status='failed', error={'code': 'credential_unavailable', 'message': 'OpenRouter credential unavailable'})
         return receipt

@@ -10,7 +10,7 @@ from decimal import Decimal
 import hashlib
 import json
 import math
-import os
+from .credentials import resolve_api_key
 import time
 import urllib.error
 import urllib.request
@@ -21,7 +21,7 @@ CANONICAL_SLUG = "deepseek/deepseek-v4.1-flash-20260910"
 RESPONSE_MODELS = {MODEL_ID, CANONICAL_SLUG}
 RATE_DATE = "2026-10-10"
 MAX_REQUEST_BYTES = 131072
-MAX_OUTPUT_TOKENS = 16384
+MAX_OUTPUT_TOKENS = 65536
 MAX_RESPONSE_BYTES = 2000000
 MODELS = {
     MODEL_ID: {
@@ -60,7 +60,7 @@ def _request_body(payload):
     if not isinstance(payload["model"], str) or payload["model"] not in MODELS:
         raise HostedInferenceError("Unsupported model; use an exact approved hosted model ID")
     if type(payload["max_tokens"]) is not int or not 1 <= payload["max_tokens"] <= MAX_OUTPUT_TOKENS:
-        raise HostedInferenceError("max_tokens must be an integer from 1 to 16384")
+        raise HostedInferenceError("max_tokens must be an integer from 1 to 65536")
     messages = payload["messages"]
     if not isinstance(messages, list) or not 1 <= len(messages) <= 64:
         raise HostedInferenceError("messages must contain 1 to 64 text messages")
@@ -146,14 +146,14 @@ def evaluate(payload, *, execute=False, budget_usd=None, api_key=None, timeout=2
     """Default to offline preflight; execution requires an explicit request and budget."""
     if type(execute) is not bool:
         raise HostedInferenceError("execute must be an explicit boolean")
-    if not _number(timeout, 0.001, 60):
-        raise HostedInferenceError("timeout must be finite, positive and at most 60 seconds")
+    if not _number(timeout, 0.001, 300):
+        raise HostedInferenceError("timeout must be finite, positive and at most 300 seconds")
     receipt = preflight(payload, budget_usd=budget_usd)
     if not execute:
         return receipt
     if budget_usd is None or budget_usd < receipt["cost"]["preflight_ceiling_usd"]:
         raise HostedInferenceError("Execution requires an explicit budget covering the full-context ceiling")
-    key = os.environ.get("OPENROUTER_API_KEY", "") if api_key is None else api_key
+    key = resolve_api_key() if api_key is None else api_key
     if not isinstance(key, str) or not key or len(key) > 512 or any(ord(c) < 33 or ord(c) > 126 for c in key):
         return _failure(receipt, "credential_unavailable", "Missing or invalid OpenRouter credential")
     body = _request_body(payload)

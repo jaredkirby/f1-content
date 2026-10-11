@@ -31,7 +31,7 @@ def options(parser):
     group.add_argument('--expected-plan-sha256', help='Require the exact authorized model-plan bytes before execution')
     group.add_argument('--execute', action='store_true', help='Explicitly execute bounded hosted model work')
     group.add_argument('--budget-usd', type=float, help='Authorized hosted request budget under the documented rates')
-    group.add_argument('--timeout-seconds', type=float, default=20, help='Bounded hosted transport timeout, at most 60 seconds')
+    group.add_argument('--timeout-seconds', type=float, default=120, help='Bounded hosted transport timeout, at most 300 seconds')
 
 
 def load_request(path):
@@ -63,8 +63,8 @@ def _hosted_work(args):
         from .jev_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
     else:
         from .hosted_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
-    if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 60:
-        raise ValueError('timeout-seconds must be finite, positive and at most 60')
+    if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 300:
+        raise ValueError('timeout-seconds must be finite, positive and at most 300')
     payload = load_request(args.request)
     preview = preflight(payload, budget_usd=args.budget_usd)
     if not args.execute:
