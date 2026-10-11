@@ -2,6 +2,10 @@
 
 Date: 2026-10-11. Status: complete; combined source verified for the authorized main push.
 
+Final follow-through: merge `331ce66` was pushed and followed by repair `043aa03`.
+The [preservation audit](branch-preservation-audit.md) has the final successful
+five-job CI receipt. Publication instructions below are historical completed work.
+
 ## Objective and decisions
 
 The user clarified that the intended push destination is `main`. Preserve newer

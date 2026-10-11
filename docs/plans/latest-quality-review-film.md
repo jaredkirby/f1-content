@@ -3,6 +3,10 @@
 Objective: replace the private review page's prior candidate with the latest
 corrected generation, preserving styling, voice, source provenance and feedback.
 
+Status: render, private publication and hosted browser follow-through complete;
+real phone/editorial acceptance pending. Current follow-through belongs in
+the [remaining-work plan](remaining-implementation.md).
+
 Use an isolated event workspace; preserve prior manifests and provider receipts.
 The 11-call quality pass is upstream evidence, not new inference in this render.
 Select a tighter 99-word story focused on the three-sector arithmetic and its
@@ -23,9 +27,12 @@ or human acceptance was recorded.
 
 The exact tested Site source was privately published. The hosted video, poster,
 script and captions all returned matching hashes. Native publication retained the
-owner-only audience. Normal hosted browser sign-in still returns OpenAI
-`invalid_state`; the destination status honestly remains incomplete for that
-interactive check. The user can review through the existing phone destination.
+owner-only audience. The initial hosted browser check returned OpenAI
+`invalid_state`. A later 11 October operator follow-through loaded the protected
+feedback UI, played the current video beyond 30 seconds without error, paused
+and sought to zero. Its new hash-bound evidence retains the original local
+annotation/history checks and deployment bindings; readiness now passes. No
+production feedback was submitted and actual phone/editorial review is pending.
 
 Selected output: version `d8ee4efbde62`, 41.3 seconds, video SHA-256
 `315d3060293bdcec1a9a7f28bd8fe30cf7766c35aa99397d1f21bf113eb6d02b`.

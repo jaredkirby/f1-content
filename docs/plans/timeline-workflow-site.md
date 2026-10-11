@@ -2,6 +2,11 @@
 
 Status: complete
 
+Follow-through: the later [accuracy review](timeline-workflow-review.md) was also
+privately published. Its saved successful deployment binds Site commit `8931015`
+and the exact current documentation HTML hash; initial 49-ID measurements below
+describe the original guide, not the revised 55-ID version.
+
 ## Objective
 
 Generate a standalone local HTML page explaining the retained Singapore Sprint

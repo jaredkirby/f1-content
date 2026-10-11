@@ -11,6 +11,7 @@ def main(path):
     with ZipFile(path) as wheel:
         names = set(wheel.namelist())
         required = {'f1_pipeline/cli.py', 'f1_pipeline/jev_adapter.py',
+                    'f1_pipeline/quality_protocol.py', 'f1_pipeline/story_contract.py',
                     'f1_pipeline/live.py', 'f1_pipeline/resources/live.html',
                     'f1_pipeline/resources/jev_questions.json',
                     'f1_pipeline/resources/timeline.css', 'f1_pipeline/resources/timeline.js',
@@ -42,11 +43,14 @@ sys.path[:0] = [sys.argv[1], sys.argv[2]]
 import f1_pipeline
 import test_review_destination as review
 import test_live as live
+import test_quality_cli as quality
 assert Path(sys.argv[1]).resolve() in Path(f1_pipeline.__file__).resolve().parents
 review.PACKAGE_ROOT = Path(sys.argv[1])
+quality.PACKAGE_ROOT = Path(sys.argv[1])
 suite = unittest.TestSuite([
     unittest.defaultTestLoader.loadTestsFromTestCase(review.ReviewDestinationTests),
     unittest.defaultTestLoader.loadTestsFromTestCase(live.LiveTests),
+    unittest.defaultTestLoader.loadTestsFromTestCase(quality.QualityProtocolCLITests),
 ])
 result = unittest.TextTestRunner(verbosity=2).run(suite)
 raise SystemExit(not result.wasSuccessful())

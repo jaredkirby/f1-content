@@ -31,10 +31,11 @@ with a measured path to hosted open models across text, vision and speech.
 
 ## Next action
 
-Implement private feedback/model provenance capture as the first follow-up, then
-evaluate the subscription reference against a hosted open-model candidate. Build
-an API adapter only with a concrete provider, credentials, budget and input scope.
-This review does not claim that live quality comparisons or API integration ran.
+Feedback/provenance and the explicit OpenRouter text/Jev workflows were subsequently
+implemented and live candidates produced. Human-reviewed reference/candidate
+quality, held-out evaluation and broader modality work remain pending; see the
+[remaining-work plan](remaining-implementation.md). This original review did not
+execute those later workflows.
 
 ## Verification
 

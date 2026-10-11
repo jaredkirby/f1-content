@@ -1,6 +1,7 @@
 # Durable credentials and practical quality validation
 
-Status: implementation and live validation complete; corrected script awaits editorial review. Baseline: `91f2a3f`.
+Status: credentials, live controls and later opt-in story contracts complete;
+human acceptance and actual held-out quality evaluation pending. Baseline: `91f2a3f`.
 
 This record ends before the film render. The subsequent
 [latest-film plan](latest-quality-review-film.md) records the 41.3-second
@@ -78,6 +79,12 @@ render, human acceptance or model promotion is claimed.
 Next quality improvement: supply each model stage the same explicit event/claim
 and numeric ledger, and require duration plus source bindings in the output schema.
 Keep deterministic arithmetic and independent editorial review as separate gates.
+
+The [remaining-work plan](remaining-implementation.md) records implementation of
+this later opt-in structural/source/arithmetic gate. Existing historical runs are
+unchanged; the corrected 41.3-second film did not use the new contract. Its human
+acceptance remains pending and the gate cannot establish free-prose factual truth
+or actual spoken duration.
 
 Work is isolated in a managed worktree because the shared checkout moved to main
 while this task was active. Event archives and the private Site remain in their

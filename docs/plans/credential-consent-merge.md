@@ -1,5 +1,15 @@
 # Credential consent and branch integration
 
+Status: complete for source and merge; independent Site rollout pending.
+
+The 11 October reconciliation found the retained phone Site at `12fe749` still
+uses the earlier credential handlers and lacks the storage-operation helper.
+Credential entry is disabled. The [remaining-work plan](remaining-implementation.md)
+records the subsequently prepared template synchronization: six crypto/storage
+tests, five synthetic real-handler contracts, TypeScript and production build
+passed; media/configuration/style preservation passed. Publication remains
+pending and the source merge does not establish a Site deployment.
+
 ## Objective
 
 Fix the two non-live branch review findings, verify the complete branch chain,

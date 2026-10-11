@@ -1,12 +1,17 @@
 # OpenRouter editorial work and Jev judgments
 
-Status: implementation complete; live Jev verified, story completion pending. Baseline: `58baa908278bd2dd2d643d2b7be56389269b538e`.
+Status: workflow, later live controls and opt-in story validation implemented;
+human acceptance pending. Baseline: `58baa908278bd2dd2d643d2b7be56389269b538e`.
 
 The pending-story and proposed-call statements below describe this checkpoint.
 The subsequent [quality pass](credential-storage-and-quality-validation.md)
 completed draft/critique/revision; the [latest film](latest-quality-review-film.md)
 records the separately corrected and published review output. Human acceptance
 remains pending.
+
+Current source improvements and offline evaluation preparation are implemented in
+the [remaining-work plan](remaining-implementation.md). The unfinished-story and
+one-call follow-up entries below retain their historical checkpoint meaning.
 
 ## Problem Statement
 

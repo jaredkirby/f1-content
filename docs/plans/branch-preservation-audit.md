@@ -1,6 +1,11 @@
 # All-branch preservation audit
 
-Date: 2026-10-11. Status: complete; preservation and local CI repair verified.
+Date: 2026-10-11. Status: complete; preservation, repair and hosted CI verified.
+
+Final follow-through: repair `043aa03` is current local `main` and its local remote
+tracking ref. Saved final verification records successful CI run `38151146541`
+with all five jobs passed. The pre-push next action below is historical; no repair,
+merge or push remains pending in this plan. See the [current index](README.md).
 
 ## Objective
 

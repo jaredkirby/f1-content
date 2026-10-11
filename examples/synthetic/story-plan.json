@@ -1,0 +1,83 @@
+{
+  "schema_version": "f1.model_plan.v1",
+  "event_id": "synthetic-session",
+  "event_binding": {
+    "path": "config/event.json",
+    "sha256": "0fc320f616ce29cf5f88a09297ae8c628d9889a6c5e6a16c5a9b83592eec3e86"
+  },
+  "plan_id": "synthetic-story-contract",
+  "comparison_id": "synthetic-story-contract",
+  "story_contract": {
+    "path": "story-ledger.json",
+    "sha256": "f1c6e2e9778bc0a04ccf540743546abaad5268fc7a7cacb449696a3046fafa4f"
+  },
+  "jobs": [
+    {
+      "id": "draft-a",
+      "kind": "text",
+      "contract_stage": "draft",
+      "request": {
+        "path": "story-request.json",
+        "sha256": "3764fecf93d5756e1aeb78185bf280e9bfa73e5164c76c91c10c1fa880d741b6"
+      },
+      "evidence": [
+        {
+          "path": "story-source.json",
+          "sha256": "e328549cacda2a8be61df0ff4e0a2fdde5b7cb7516ea547e942dd729c7e56023"
+        }
+      ],
+      "depends_on": [],
+      "task": "story_script",
+      "format": "vertical",
+      "prompt_version": "synthetic-contract-v1",
+      "rubric_version": "synthetic-contract-v1"
+    },
+    {
+      "id": "critique-a",
+      "kind": "text",
+      "contract_stage": "critique",
+      "request": {
+        "path": "story-request.json",
+        "sha256": "3764fecf93d5756e1aeb78185bf280e9bfa73e5164c76c91c10c1fa880d741b6"
+      },
+      "evidence": [
+        {
+          "path": "story-source.json",
+          "sha256": "e328549cacda2a8be61df0ff4e0a2fdde5b7cb7516ea547e942dd729c7e56023"
+        }
+      ],
+      "depends_on": [
+        "draft-a"
+      ],
+      "task": "story_script",
+      "format": "vertical",
+      "prompt_version": "synthetic-contract-v1",
+      "rubric_version": "synthetic-contract-v1"
+    },
+    {
+      "id": "revision-a",
+      "kind": "text",
+      "contract_stage": "revision",
+      "request": {
+        "path": "story-request.json",
+        "sha256": "3764fecf93d5756e1aeb78185bf280e9bfa73e5164c76c91c10c1fa880d741b6"
+      },
+      "evidence": [
+        {
+          "path": "story-source.json",
+          "sha256": "e328549cacda2a8be61df0ff4e0a2fdde5b7cb7516ea547e942dd729c7e56023"
+        }
+      ],
+      "depends_on": [
+        "draft-a",
+        "critique-a"
+      ],
+      "task": "story_script",
+      "format": "vertical",
+      "prompt_version": "synthetic-contract-v1",
+      "rubric_version": "synthetic-contract-v1"
+    }
+  ],
+  "max_calls": 3,
+  "budget_usd": 2
+}

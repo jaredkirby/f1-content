@@ -131,6 +131,11 @@ it does not infer or require subjective approval.
 
 ## Compare quality before efficiency
 
+Prepare a frozen development/held-out sample with the offline
+[quality-protocol commands](quality-evaluation.md). Protocol preparation checks
+declared source-group separation and current bindings; the evaluation below
+continues to report actual model work and human feedback separately.
+
 ```sh
 ./scripts/f1 --workspace /absolute/path/to/event model-evaluate --comparison-id pilot
 ```

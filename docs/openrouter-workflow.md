@@ -92,3 +92,18 @@ live pilot, 3,910 reasoning tokens consumed most of a 4,096-token allowance and 
 story was unfinished. Preserve the failed receipt and its charge; increasing the
 allowance requires a new reviewed request and budget. Reuse accepted Jev receipts
 as bound evidence rather than spending on the same claim judgments again.
+
+## Optional story ledger gate
+
+For draft/critique/revision work, an explicit plan can bind one immutable
+`story_contract` ledger and label every text job's `contract_stage`. The
+[story contract guide](story-contract.md) defines exact event/source/claim/numeric
+bindings, Decimal arithmetic, unresolved facts, bounded segment timing and the
+constrained critique schema. The same ledger reaches all text stages.
+
+A structurally invalid story stops dependent generation even when the provider
+successfully produced and billed JSON. Separate bound validation receipts retain
+the failure and original provider output; observed charges and unknown billing
+remain distinct. `model-review` rechecks the gate and exposes structured results
+only for a current completed plan. Existing plans remain backward compatible.
+This gate does not prove narration truth or supply human acceptance.

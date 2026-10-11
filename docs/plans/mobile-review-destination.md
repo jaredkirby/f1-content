@@ -1,7 +1,12 @@
 # Mobile video and feedback destination
 
-Date: 2026-10-10. Status: implemented and privately published; hosted interactive
-sign-in verification awaits a valid human browser session.
+Date: 2026-10-10. Status: implemented and privately published; latest-version
+hosted playback/authentication follow-through passed on 11 October.
+
+Current follow-up: the latest 41.3-second edit is published and remains unreviewed
+in saved evidence. The [remaining-work plan](remaining-implementation.md) tracks
+the separate credential-template rollout. Current hosted playback/authentication
+checks passed for the latest film; actual phone feedback remains pending.
 
 ## Objective
 
@@ -37,8 +42,9 @@ receive relevant regressions, then `scripts/check` before commit.
 
 The human opens the private destination on their phone, verifies sign-in and
 submits feedback there or in this chat. Capture that real feedback before changing
-important preferences or promoting a model. Complete the pending hosted browser
-check after a valid sign-in; keep the technical handoff status fail-closed meanwhile.
+important preferences or promoting a model. The latest film's readiness now passes
+with current hosted browser evidence; historical sign-in failures stay in their
+original receipts.
 
 ## Implementation evidence
 
@@ -52,6 +58,7 @@ Native private publication succeeded for the exact pushed source. Hosted video
 and poster returned 200 with the exact original hashes, and production D1 has
 the feedback schema with zero synthetic rows. The preview browser's OpenAI sign-in
 failed twice with an expired session (`invalid_state`); no authentication was
-weakened. The private workspace receipt records that limitation and keeps the
-hosted interactive check pending. Shared checks passed: 140 offline regressions,
+weakened. That original receipt kept hosted interaction pending; the latest-film
+follow-through above subsequently passed readiness. Shared checks at this original
+checkpoint passed: 140 offline regressions,
 synthetic CLI smoke/index guard, Site TypeScript/build and local API/browser checks.

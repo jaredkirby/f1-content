@@ -24,9 +24,10 @@ inconsistent contracts/status, and preserve uncommitted live work and archives.
 
 ## Next action
 
-Reconcile `Live` with newer `main` in a separately reviewed integration. Resolve
-hosted interactive sign-in and capture actual version-bound phone feedback for
-the latest film. This review does not authorize a provider run, merge or publication.
+The [Live/main integration](live-main-integration.md) and subsequent
+[preservation audit](branch-preservation-audit.md) completed reconciliation and
+verified the CI repair. Remaining hosted interaction and version-bound phone
+feedback are tracked by the [remaining-work plan](remaining-implementation.md).
 
 ## Standards
 

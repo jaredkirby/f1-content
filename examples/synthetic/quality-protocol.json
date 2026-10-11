@@ -1,0 +1,46 @@
+{
+  "schema_version": "f1.quality_protocol.v1",
+  "protocol_id": "synthetic-quality-v1",
+  "event_identity": {
+    "id": "synthetic-session",
+    "year": 2026,
+    "country_name": "Example",
+    "session_name": "Qualifying",
+    "event_date": "2026-10-10",
+    "session_key": 999999,
+    "meeting_key": 999999
+  },
+  "rubric": {
+    "version": "synthetic-evidence-review-v1",
+    "path": "quality-protocol-rubric.json",
+    "sha256": "87f82e10acf4ef884c1b6bb1ed416679d3c0fb58c87ea8fb4171b3860a3f2066"
+  },
+  "split_assignment": {
+    "kind": "operator_declared",
+    "reference": "Fictional example assignment; no real evaluation or approval"
+  },
+  "cases": [
+    {
+      "case_id": "caption-session-development",
+      "split": "development",
+      "source_group_ids": ["fictional-caption-source"],
+      "evidence": [
+        {
+          "path": "quality-protocol-development.json",
+          "sha256": "3a9f36f5f424e9931869cd6073ae6e4a0ff6a5fd20615354020845242ca75534"
+        }
+      ]
+    },
+    {
+      "case_id": "classification-held-out",
+      "split": "held_out",
+      "source_group_ids": ["fictional-classification-source"],
+      "evidence": [
+        {
+          "path": "quality-protocol-held-out.json",
+          "sha256": "d244b544238a9244c41b9b6e816df4e5e0e217e8c3ebfd53a6e0951419b32d7a"
+        }
+      ]
+    }
+  ]
+}

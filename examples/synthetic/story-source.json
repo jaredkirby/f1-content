@@ -1,0 +1,16 @@
+{
+  "synthetic": true,
+  "classification": [
+    {
+      "driver": "A",
+      "seconds": "60.125"
+    },
+    {
+      "driver": "B",
+      "seconds": "60.325"
+    }
+  ],
+  "limitations": [
+    "Fictional source. No cause evidence."
+  ]
+}

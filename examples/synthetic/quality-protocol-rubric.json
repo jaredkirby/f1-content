@@ -1,0 +1,10 @@
+{
+  "version": "synthetic-evidence-review-v1",
+  "purpose": "Fictional protocol preparation; no real event evidence or human labels.",
+  "criteria": [
+    "Resolve exact event and session from supplied evidence.",
+    "Retain source locators and state missing or conflicting evidence.",
+    "Keep technical validity separate from explicit human output acceptance."
+  ],
+  "promotion_thresholds": null
+}

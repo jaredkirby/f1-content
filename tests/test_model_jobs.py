@@ -237,3 +237,158 @@ with patch('urllib.request.build_opener',return_value=Transport()):
             self.assertFalse((root/'runs/model-plans').exists())
             data['max_calls']=65;plan.write_text(json.dumps(data))
             self.assertNotEqual(self.invoke(root,'model-run','--request',str(plan)).returncode,0)
+
+
+class ContractedModelJobsTests(unittest.TestCase):
+    """Public run/review gates over a draft, critique and revision, without network."""
+    fixture = ModelJobsTests.fixture
+    invoke = ModelJobsTests.invoke
+
+    def fixture_contract(self, root):
+        from test_story_contract import LEDGER
+        import copy
+        path = self.fixture(root)
+        plan = json.loads(path.read_text())
+        ledger = copy.deepcopy(LEDGER)
+        ledger['event_binding'] = plan['event_binding']
+        ledger['sources'][0]['binding'] = plan['jobs'][0]['evidence'][0]
+        ledger_path = root/'story-ledger.json'
+        ledger_path.write_text(json.dumps(ledger))
+        plan['story_contract'] = {'path': 'story-ledger.json', 'sha256': hashlib.sha256(ledger_path.read_bytes()).hexdigest()}
+        base = plan['jobs'][1]
+        plan['jobs'] = [{**base, 'id': stage+'-a', 'contract_stage': stage,
+                        'depends_on': [] if stage == 'draft' else ['draft-a'] if stage == 'critique' else ['draft-a', 'critique-a']}
+                       for stage in ('draft', 'critique', 'revision')]
+        plan.update(max_calls=3, budget_usd=2)
+        path.write_text(json.dumps(plan))
+        return path
+
+    def contracted_network(self, root, *args, invalid=None, unknown_cost=False):
+        script = '''import json,sys
+from pathlib import Path
+from unittest.mock import patch
+from test_story_contract import OUTPUT
+class Response:
+    def __init__(self,url,data): self.url,self.data=url,data
+    def __enter__(self): return self
+    def __exit__(self,*args): pass
+    def getcode(self): return 200
+    def geturl(self): return self.url
+    def read(self,limit): return json.dumps(self.data).encode()
+class Transport:
+    def open(self,request,timeout):
+        body=json.loads(request.data)
+        packed=json.loads(body['messages'][-1]['content'].split('\\n',1)[1])
+        stage=packed['required_output_shape']['stage']
+        ledger=packed['ledger']
+        received=Path(sys.argv[2])/'received-ledgers.jsonl'
+        with received.open('a') as stream: stream.write(json.dumps(ledger,sort_keys=True)+'\\n')
+        output=json.loads(json.dumps(OUTPUT))
+        output.update(stage=stage,ledger_sha256=packed['ledger_binding']['sha256'])
+        if stage=='critique':
+            for field in ('title','hook','segments'): output.pop(field)
+            output.update(verdict='insufficient_evidence',issues=[{'claim_id':'cause','segment_id':None,
+                'category':'factual','comment':'No cause evidence exists.'}])
+        if stage=='draft' and INVALID=='overlong': output['segments'][0]['end_seconds']=46
+        if stage=='draft' and INVALID=='unsupported': output['segments'][0]['claim_ids']=['cause']
+        if stage=='draft' and INVALID=='malformed': output.pop('segments')
+        if stage=='draft' and INVALID=='wrong-ledger': output['ledger_sha256']='f'*64
+        usage={'prompt_tokens':20,'completion_tokens':10,'total_tokens':30,'cost':0.00001,'is_byok':False}
+        if UNKNOWN_COST: usage.pop('is_byok')
+        return Response(request.full_url,{'object':'chat.completion','model':'deepseek/deepseek-v4.1-flash',
+            'choices':[{'index':0,'message':{'role':'assistant','content':json.dumps(output)},'finish_reason':'stop'}],
+            'usage':usage})
+with patch('urllib.request.build_opener',return_value=Transport()):
+    from f1_pipeline.cli import main
+    raise SystemExit(main(sys.argv[1:]))
+'''
+        script = 'INVALID='+repr(invalid)+'\nUNKNOWN_COST='+repr(unknown_cost)+'\n'+script
+        env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(PROJECT), str(PROJECT/'tests')]),
+                   OPENROUTER_API_KEY='synthetic-test-key', PYTHONDONTWRITEBYTECODE='1')
+        env.pop('F1_WORKSPACE', None)
+        return subprocess.run([sys.executable,'-B','-c',script,'--workspace',str(root),*args],
+                              env=env,cwd=PROJECT,text=True,capture_output=True)
+
+    def test_contract_shared_by_draft_critique_revision_and_review_bound_to_receipts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = self.fixture_contract(root)
+            preview = self.invoke(root, 'model-run', '--request', str(path))
+            self.assertEqual(preview.returncode, 0, preview.stderr)
+            self.assertFalse((root/'runs/model-plans').exists())
+            result = self.contracted_network(root, 'model-run', '--request', str(path), '--execute')
+            self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
+            record = json.loads(result.stdout)
+            self.assertEqual(record['status'], 'completed')
+            self.assertEqual(record['attempted_calls'], 3)
+            ledgers = (root/'received-ledgers.jsonl').read_text().splitlines()
+            self.assertEqual(len(ledgers), 3)
+            self.assertEqual(len(set(ledgers)), 1)
+            review = self.invoke(root, 'model-review', '--request', str(path))
+            self.assertEqual(review.returncode, 0, review.stderr)
+            reviewed = json.loads(review.stdout)
+            self.assertEqual(reviewed['human_acceptance'], 'not_inferred')
+            self.assertEqual(reviewed['drafts'][1]['structured_output']['verdict'], 'insufficient_evidence')
+            self.assertEqual(reviewed['drafts'][2]['structured_output']['unresolved'],
+                             ['claim:cause', 'number:cause-confidence'])
+            detached = root/record['jobs'][0]['story_validation']['path']
+            detached.write_text('{}')
+            self.assertNotEqual(self.invoke(root, 'model-review', '--request', str(path)).returncode, 0)
+
+    def test_invalid_generation_stops_dependents_with_raw_output_validation_and_charge(self):
+        for invalid in ('overlong', 'unsupported', 'malformed', 'wrong-ledger'):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                path = self.fixture_contract(root)
+                result = self.contracted_network(root, 'model-run', '--request', str(path), '--execute', invalid=invalid)
+                self.assertEqual(result.returncode, 2, result.stderr or result.stdout)
+                record = json.loads(result.stdout)
+                self.assertEqual(record['status'], 'failed')
+                self.assertEqual(record['attempted_calls'], 1)
+                self.assertEqual(record['actual_total_cost_usd'], 0.00001)
+                self.assertEqual(record['jobs'][0]['status'], 'story_contract_failed')
+                provider = json.loads((root/record['jobs'][0]['provider_receipt']['path']).read_text())
+                self.assertTrue(provider['accepted_model_result'])
+                self.assertIn('output_text', provider['result'])
+                validation = json.loads((root/record['jobs'][0]['story_validation']['path']).read_text())
+                self.assertEqual(validation['status'], 'failed')
+                self.assertFalse((root/'runs/model-evaluations/synthetic-plan/critique-a.assets').exists())
+                self.assertNotEqual(self.invoke(root, 'model-review', '--request', str(path)).returncode, 0)
+                self.assertNotEqual(self.contracted_network(root, 'model-run', '--request', str(path), '--execute').returncode, 0)
+
+    def test_stale_ledger_source_and_arithmetic_fail_before_transport(self):
+        for changed in ('ledger', 'source', 'arithmetic', 'missing-stage'):
+            with self.subTest(changed=changed), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                path = self.fixture_contract(root)
+                if changed == 'ledger':
+                    (root/'story-ledger.json').write_text('{}')
+                elif changed == 'source':
+                    (root/'research/evidence.json').write_text('changed fictional source')
+                else:
+                    plan = json.loads(path.read_text())
+                    if changed == 'arithmetic':
+                        ledger_path = root/'story-ledger.json'
+                        ledger = json.loads(ledger_path.read_text())
+                        ledger['numbers'][2]['value'] = '0.199'
+                        ledger_path.write_text(json.dumps(ledger))
+                        plan['story_contract']['sha256'] = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+                    else:
+                        plan['jobs'][1].pop('contract_stage')
+                    path.write_text(json.dumps(plan))
+                result = self.contracted_network(root, 'model-run', '--request', str(path), '--execute')
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn('Traceback', result.stderr)
+                self.assertFalse((root/'received-ledgers.jsonl').exists())
+                self.assertFalse((root/'runs/model-plans').exists())
+
+    def test_unknown_actual_cost_is_preserved_after_a_contract_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = self.fixture_contract(root)
+            result = self.contracted_network(root, 'model-run', '--request', str(path), '--execute',
+                                               invalid='overlong', unknown_cost=True)
+            self.assertEqual(result.returncode, 2, result.stderr or result.stdout)
+            record = json.loads(result.stdout)
+            self.assertIsNone(record['actual_total_cost_usd'])
+            self.assertEqual(record['attempted_calls'], 1)

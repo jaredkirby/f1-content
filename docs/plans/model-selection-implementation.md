@@ -58,9 +58,11 @@ relevant regressions, then `scripts/check` once. Keep private run receipts in
 
 ## Next action
 
-Run a bounded reference/candidate quality pilot on approved evidence, then present
-one vertical edit for the user's approve/reject comments. Live model/voice promotion
-requires those results; no promotion is inferred from synthetic tests.
+Reference and candidate pilots subsequently ran; the latest 41.3-second edit is
+privately published. Capture actual version-bound phone comments, then use a
+frozen source-grouped evaluation protocol for later comparisons. Offline protocol
+tooling is assigned in the [remaining-work plan](remaining-implementation.md).
+Live model/voice promotion still requires human-reviewed evidence.
 
 ## Delivered and verified
 

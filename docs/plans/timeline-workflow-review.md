@@ -1,7 +1,12 @@
 # Timeline workflow guide accuracy review
 
-Status: review complete; recorded in this commit, not deployed. Source baseline: `58baa90`.
+Status: review and subsequent private publication complete. Source baseline: `58baa90`.
 Date: 2026-10-10.
+
+Final follow-through: saved deployment `site-deployment-a986231.json` succeeded
+with owner-private access and Site commit `8931015`. Its HTML SHA matches current
+`docs/timeline-workflow.html` and the independent Site source. The original
+not-deployed checkpoint below is historical; no publication remains pending.
 
 ## Objective
 
@@ -39,9 +44,9 @@ handoffs and missing operational steps while retaining the standalone phone layo
   The browser-session clipboard read was empty, so exact clipboard transfer was
   not independently verified. No original film or hosted Site was retested.
 
-Evidence lives under ignored `runs/timeline-workflow-review/`. The revised local
-HTML is the review deliverable; the separately hosted guide retains its earlier
-version until a publication is requested. Historical per-output model identity
+Evidence lives under ignored `runs/timeline-workflow-review/`. At the original
+review checkpoint, revised HTML was local and the hosted guide retained its earlier
+version; the final follow-through above supersedes that checkpoint. Historical per-output model identity
 and actual human phone/editorial acceptance remain unknown rather than inferred.
 Concurrent uncommitted OpenRouter/Jev work appeared during final verification and
 was left untouched. This guide's implementation claims are pinned to the stated

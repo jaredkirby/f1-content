@@ -1,0 +1,87 @@
+{
+  "schema_version": "f1.story_ledger.v1",
+  "event_id": "synthetic-session",
+  "event_binding": {
+    "path": "config/event.json",
+    "sha256": "0fc320f616ce29cf5f88a09297ae8c628d9889a6c5e6a16c5a9b83592eec3e86"
+  },
+  "event_identity": {
+    "id": "synthetic-session",
+    "year": 2026,
+    "country_name": "Example",
+    "session_name": "Qualifying",
+    "event_date": "2026-10-10",
+    "session_key": 999999,
+    "meeting_key": 999999
+  },
+  "max_duration_seconds": 45,
+  "sources": [
+    {
+      "id": "classification",
+      "binding": {
+        "path": "story-source.json",
+        "sha256": "e328549cacda2a8be61df0ff4e0a2fdde5b7cb7516ea547e942dd729c7e56023"
+      },
+      "locator": "Synthetic table, rows A and B"
+    }
+  ],
+  "numbers": [
+    {
+      "id": "a-time",
+      "value": "60.125",
+      "unit": "seconds",
+      "source_ids": [
+        "classification"
+      ]
+    },
+    {
+      "id": "b-time",
+      "value": "60.325",
+      "unit": "seconds",
+      "source_ids": [
+        "classification"
+      ]
+    },
+    {
+      "id": "gap",
+      "value": "0.200",
+      "unit": "seconds",
+      "source_ids": [
+        "classification"
+      ],
+      "derivation": {
+        "operation": "subtract",
+        "operands": [
+          "b-time",
+          "a-time"
+        ]
+      }
+    },
+    {
+      "id": "cause-confidence",
+      "value": null,
+      "unit": "probability",
+      "source_ids": []
+    }
+  ],
+  "claims": [
+    {
+      "id": "result",
+      "text": "Fictional A finished 0.200 seconds ahead of B.",
+      "status": "supported",
+      "source_ids": [
+        "classification"
+      ],
+      "numeric_ids": [
+        "gap"
+      ]
+    },
+    {
+      "id": "cause",
+      "text": "The cause is unknown.",
+      "status": "unknown",
+      "source_ids": [],
+      "numeric_ids": []
+    }
+  ]
+}
