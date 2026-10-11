@@ -83,3 +83,10 @@ wire schema permits their omission. A billed response can therefore be unusable.
 Charges reported by OpenRouter, token-based estimates and unknown costs stay
 separate. A partial bill is not reported as a complete run total. Technical success
 and model confidence do not record human approval or trigger a render/publication.
+
+
+Reasoning models share `max_tokens` between reasoning and visible output. In the
+live pilot, 3,910 reasoning tokens consumed most of a 4,096-token allowance and the
+story was unfinished. Preserve the failed receipt and its charge; increasing the
+allowance requires a new reviewed request and budget. Reuse accepted Jev receipts
+as bound evidence rather than spending on the same claim judgments again.

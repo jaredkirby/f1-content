@@ -1,6 +1,6 @@
 # OpenRouter editorial work and Jev judgments
 
-Status: implementation complete; live pilot awaiting phone credential. Baseline: `58baa908278bd2dd2d643d2b7be56389269b538e`.
+Status: implementation complete; live Jev verified, story completion pending. Baseline: `58baa908278bd2dd2d643d2b7be56389269b538e`.
 
 ## Problem Statement
 
@@ -105,3 +105,21 @@ handoff; never treat preparation or synthetic tests as actual model usage.
 Private plan, preflight, source bindings and verification details stay under the
 selected workspace's ignored `runs/openrouter-jev-qualifying-v1/` directory.
 The shared source commit excludes Site repositories, archives and credentials.
+
+
+### Live pilot follow-through — 11 October 2026
+
+The private one-time phone handoff was collected and cleared. All four authorized
+calls executed: three native Jev responses passed the typed contract and the
+DeepSeek response was rejected as unfinished. Its 4,096-token completion budget
+included 3,910 reasoning tokens. Actual reported total charge: $0.0030400335.
+No automatic retry occurred. Two Jev answers entered advisory confidence triage;
+independent Decimal checks confirmed the supplied timing differences, without
+inferring technical causes or human acceptance.
+
+Immutable provider/model-work receipts and a hash-validated evaluation are retained
+locally. A separate one-call story follow-up reuses the accepted Jev evidence and
+raises the total output allowance to 16,384 tokens. Its proposed budget is $0.35
+and conservative ceiling $0.3342336. It remains unexecuted pending authorization
+for an additional call and a fresh one-time credential handoff. The prior attempt
+is neither overwritten nor represented as a completed draft.
