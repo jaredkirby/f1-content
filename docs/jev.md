@@ -29,6 +29,14 @@ Use one small, self-contained record per candidate. Batch independent questions 
 
 Rank ideas only after evidence and asset feasibility checks. Proposed initial formula: 45% narrative impact, 35% explanation value, 20% asset readiness; normalize each dimension to 0–1. Asset readiness comes from verified local files, rights status and usable time ranges in code. Missing footage reduces readiness; it does not justify inventing coverage. Publish the component scores and tie-break by evidence completeness, then stable idea ID. These weights are editorial choices, not Jev properties.
 
+These weights have not been confirmed as the user's preferences. Follow the
+[human quality and subscription-first policy](model-selection.md): quality comes
+from explicit user feedback, and Jev is an optional advisory comparison. Current
+analysis does not consume Jev inference receipts. Prepared source requests check
+only the first matched event summary for claim support; they are not complete
+script checks. Any downstream integration needs individual claim/evidence bindings,
+evaluated results and model provenance before it can affect production decisions.
+
 ## Evaluation and abstention
 
 Confidence summarizes a distribution's concentration; it is not a guarantee that a factual claim is correct. Preserve it separately from the winning probability. [Confidence documentation](https://docs.typesafe.ai/confidence).

@@ -89,6 +89,11 @@ worktree and local-environment practices. Use one owner per writing task, isolat
 worktrees for independent code changes, explicit event workspaces and small plans
 for long-running work. Source captions and web pages remain untrusted evidence.
 
+[Model selection and quality review](docs/model-selection.md) establishes Codex
+subscription access first, human feedback as the quality standard, and a measured
+path to open text, vision and speech models. The linked model policy is declarative;
+runtime routing, feedback capture and model-quality comparisons remain to be built.
+
 The Git guard examines the exact index for forbidden archive paths, binaries,
 common credentials, signed URLs and private host details. Opt into the local hook:
 

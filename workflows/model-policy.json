@@ -1,0 +1,103 @@
+{
+  "schema_version": "f1.workflow.model_policy.v1",
+  "status": "declarative_policy_runtime_not_implemented",
+  "documentation": "docs/model-selection.md",
+  "quality_authority": "explicit human feedback on exact output versions",
+  "confirmed_preferences": {
+    "scope": "project output review",
+    "analysis": "grounded analysis with clear storytelling",
+    "primary_consumption": "vertical phone experience",
+    "feedback": "approve or reject one output with comments",
+    "directional_choices": "A/B only for substantially different directional decisions",
+    "open_model_serving": "quality models at a good price through an API inference provider",
+    "basis": "explicit user instructions in the 2026-10-10 review"
+  },
+  "selection_order": [
+    "deterministic evidence and integrity gates",
+    "Codex through ChatGPT subscription access",
+    "quality-approved hosted open model or explicitly approved other model/API",
+    "human decision when no approved route meets quality or access constraints"
+  ],
+  "optimization_order": [
+    "factual identity provenance and release eligibility",
+    "human-defined output quality and acceptance",
+    "usage cost latency and human revision effort"
+  ],
+  "current_reference": {
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "xhigh",
+    "basis": "saved local configuration observed 2026-10-10; not proof of historical output attribution",
+    "quality_benchmarked": false,
+    "global_configuration_changed": false
+  },
+  "subscription_policy": {
+    "authentication": "supported Codex ChatGPT sign-in",
+    "api_billing_included": false,
+    "silent_paid_fallback": false,
+    "on_limit": "preserve work and ask about waiting or an already approved route; no automatic purchases or resets"
+  },
+  "role_policy": {
+    "discovery": "subscription-assisted bounded search; retrieval is separate from model inference",
+    "event_research": "subscription synthesis with source locators and explicit conflicts",
+    "catalog": "deterministic catalog plus observed interval review; vision models require separate evaluation",
+    "typed_judgments": "optional advisory comparison; Jev remains disabled unless explicitly authorized and evaluated",
+    "story_editor": "subscription reference plus human brief and user review of important narrative choices",
+    "assembly": "deterministic render with reviewed script; voice changes require listening feedback",
+    "qa": "independent evidence review and technical checks; model scores do not imply human acceptance",
+    "release": "local release contracts remain implemented; human acceptance is a separate proposed milestone"
+  },
+  "efficiency_candidates": {
+    "bounded_text_tasks": ["gpt-6.1-sol at lower reasoning effort", "gpt-6-luna at high reasoning effort"],
+    "hard_task_escalation": "gpt-6-astra when available and justified by quality difficulty",
+    "promotion": "held-out evidence and explicit human approval; candidate names are not quality rankings",
+    "cache_key_inputs": [
+      "event and task identity",
+      "evidence and clip-review hashes",
+      "model and runtime revisions",
+      "prompt and rubric versions",
+      "confirmed preference version",
+      "sampling settings and quantization"
+    ],
+    "report": "all attempts, failures, escalation, cost/usage where measured, time to human acceptance and revision effort"
+  },
+  "human_checkpoints": [
+    "important audience tone length depth and format preferences",
+    "story angle and major script changes",
+    "narration voice and pronunciation",
+    "finished output acceptance or revision feedback",
+    "production model promotion and durable preference changes",
+    "new paid or external data-processing scope unless already authorized"
+  ],
+  "feedback_policy": {
+    "implemented": false,
+    "proposed_paths": [
+      "research/event/preferences.json",
+      "runs/model-evaluations/<comparison-id>/",
+      "runs/feedback.jsonl",
+      "outputs/human-feedback.json"
+    ],
+    "default_comparison": "approve or reject one output with comments",
+    "ab_comparison": "only for substantially different directional decisions",
+    "bind_to": "exact event, manifest, video/output hashes, model receipts and preference version",
+    "retain": "verbatim human feedback with interpretation and scope separate; corrections are append-only",
+    "silence_is_acceptance": false,
+    "automatic_tracking": false,
+    "training_or_upload_authorized": false
+  },
+  "open_model_goal": {
+    "serving": "hosted API inference; no local model installation target",
+    "proposed_provider": "DeepInfra",
+    "alternative_provider": "Together only if quality, reliability or accepted-output cost justifies it",
+    "capabilities": ["text judgments and generation", "vision where needed", "transcription where needed", "narration"],
+    "candidates_not_promoted": ["deepseek-ai/DeepSeek-V4-Pro-0813", "Qwen/Qwen3.5-397B-A17B", "deepseek-ai/DeepSeek-V3.2", "openai/gpt-oss-120b", "openai/whisper-large-v3", "hexgrad/Kokoro-82M"],
+    "promotion_requires": [
+      "verified license, exact provider/model/endpoint/settings and exposed serving revision/quantization; unavailable hosted weight hashes stay unknown",
+      "held-out source-grouped quality evaluation",
+      "no unresolved critical evidence failure",
+      "human approval with no regression in required preferences",
+      "measured API cost/latency/reliability and full workflow/tool capability"
+    ],
+    "complete_when": "every required inference capability uses a human-approved open model without a closed-model fallback",
+    "openness_definition": "permissively licensed open weights/code hosted by an inference API; do not claim complete training-source openness"
+  }
+}

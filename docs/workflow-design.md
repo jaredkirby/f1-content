@@ -63,6 +63,13 @@ Social text, transcripts, HTML, comments and media metadata are untrusted eviden
 
 ## Jev use cases and evaluation
 
+Apply [model selection and human quality policy](model-selection.md) before adding
+model calls. Codex through the ChatGPT subscription is the first model route.
+Human feedback defines subjective quality; provider scores remain advisory.
+The [model policy](../workflows/model-policy.json) is declarative and does not
+enable runtime routing or human-feedback storage. Preserve local release gates
+and distinguish them from explicit human acceptance.
+
 The official TypeSafe Jev model is text-only. Use transcripts, verified frame observations and structured evidence as state. The direct adapter at `f1_pipeline/jev_adapter.py` pins `jev-1.13.0` and the official HTTPS endpoint. [TypeSafe model documentation](https://docs.typesafe.ai/models).
 
 The supplied `f1_pipeline/resources/jev_questions.json` asks separate questions for exact-session matching, content category, claim support, narrative impact and explanation value. This follows TypeSafe's decomposed-question and code-composition pattern. Evidence retrieval precedes the model call; Jev does not browse for missing facts. [Composite scoring](https://docs.typesafe.ai/patterns/composite-scoring), [citation checking](https://docs.typesafe.ai/cookbooks/citation_check).

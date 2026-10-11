@@ -40,6 +40,15 @@ decisions, next action and verification. Keep private run evidence in `runs/`.
 Use `docs/agent-development.md` for Codex/worktree practices and `docs/workspaces.md`
 when running an event. Read `docs/workflow-design.md` for pipeline contracts.
 
+Read `docs/model-selection.md` for model choices and quality review. Prefer Codex
+through ChatGPT subscription access first. Human feedback defines output quality;
+cost optimizations and open-model promotions must preserve that standard. Keep
+important editorial preferences, voice changes and model promotions in the human
+review loop. The model policy is declarative, not an implemented runtime router.
+Prioritize grounded storytelling for vertical phone consumption. Present one
+output for approve/reject comments; use A/B only for very different directions.
+Open-model candidates should use a quality API inference provider at a good price.
+
 When the user requests parallel agents, give each a bounded task and explicit
 file ownership. Use separate Git worktrees for independent code edits; shared
 subagents in one checkout must not edit the same files or race Git index changes.
