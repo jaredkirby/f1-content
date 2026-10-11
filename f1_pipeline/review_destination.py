@@ -10,11 +10,40 @@ from pathlib import Path
 import shutil
 from urllib.parse import urlparse
 
-from .core import CODE_ROOT, ROOT, config, digest, now, read_json, safe_relative, write_json
+from .core import ROOT, config, digest, now, read_json, safe_relative, write_json
+from .validate import QA_BASE_INPUTS, verify_bindings, verify_render_bindings
 
 WEB_CHECKS = {'mobile_layout', 'video_playback', 'video_seek', 'captions_unobscured',
               'annotation_persistence', 'decision_history', 'chat_copy',
               'version_rejection', 'authentication', 'hosted_page_and_media'}
+
+TEMPLATE_ROOT = Path(__file__).with_name('resources')/'mobile-review-site'
+TEMPLATE_FILES = (
+    'app/api/credential/route.ts', 'app/api/feedback/route.ts',
+    'app/api/operator/credential/route.ts', 'app/connect/key-entry.tsx',
+    'app/connect/page.tsx', 'app/globals.css', 'app/layout.tsx', 'app/page.tsx',
+    'app/review.tsx', 'cloudflare-env.d.ts', 'db/schema.ts', 'lib/bounded-body.ts',
+    'lib/credential-box.ts', 'public/favicon.svg', 'scripts/test-credential-box.mjs',
+    'scripts/verify-credential.mjs', 'scripts/verify-feedback.mjs',
+)
+
+
+def verify_technical_review(manifest, qa, manifest_sha, event_id):
+    """Bind mobile readiness to the same current render inputs and EDL as release QA."""
+    if not isinstance(manifest, dict) or manifest.get('event_id') != event_id:
+        raise ValueError('Manifest does not match the selected event')
+    if not isinstance(qa, dict) or qa.get('status') != 'passed' or qa.get('errors') != []:
+        raise ValueError('A passed technical validation is required before Site preparation')
+    if qa.get('event_id') != event_id or qa.get('input_hashes', {}).get('outputs/manifest.json') != manifest_sha:
+        raise ValueError('Technical validation is stale for this manifest')
+    captured = verify_render_bindings(manifest)
+    bindings = verify_bindings(qa.get('input_hashes', {}), QA_BASE_INPUTS | set(captured), 'Technical review')
+    if any(bindings.get(path) != expected for path, expected in captured.items()):
+        raise ValueError('Technical review does not bind the current render inputs')
+    plan = safe_relative(manifest.get('edit_plan', 'outputs/edit-plan.json'))
+    if (not plan.is_file() or digest(plan) != manifest.get('edit_plan_sha256')
+            or qa.get('edit_plan_sha256') != manifest.get('edit_plan_sha256')):
+        raise ValueError('Technical edit-plan review is stale')
 
 
 def prepare_review_site(site_directory):
@@ -29,15 +58,7 @@ def prepare_review_site(site_directory):
     manifest = read_json(manifest_path)
     qa = read_json(safe_relative('outputs/qa.json'))
     manifest_sha = digest(manifest_path)
-    if not isinstance(manifest, dict) or manifest.get('event_id') != cfg['id']:
-        raise ValueError("Manifest does not match the selected event")
-    if not isinstance(qa, dict) or qa.get('status') != 'passed' or qa.get('errors') != []:
-        raise ValueError("A passed technical validation is required before Site preparation")
-    if qa.get('event_id') != cfg['id'] or qa.get('input_hashes', {}).get('outputs/manifest.json') != manifest_sha:
-        raise ValueError("Technical validation is stale for this manifest")
-    for path, expected in qa.get('input_hashes', {}).items():
-        if digest(safe_relative(path)) != expected:
-            raise ValueError("Technical validation evidence changed: " + path)
+    verify_technical_review(manifest, qa, manifest_sha, cfg['id'])
     videos = [v for v in manifest.get('videos', []) if v.get('format') == 'vertical']
     if len(videos) != 1:
         raise ValueError("Review exactly one vertical output at a time")
@@ -98,7 +119,10 @@ def prepare_review_site(site_directory):
                      'model': preview['requested_model'], 'budgetUsd': auth['budget_usd'],
                      'requestSha256': preview['request_sha256'], 'requestFileSha256': binding['sha256']}
     # Validate every source before changing the destination. Preserve starter integration.
-    templates = CODE_ROOT/'workflows/mobile-review-site'
+    templates = TEMPLATE_ROOT
+    missing = [name for name in TEMPLATE_FILES if not (templates/name).is_file()]
+    if missing:
+        raise ValueError('Packaged review Site templates are missing: ' + ', '.join(missing))
     for target in (site/'app/data/pilot.json', site/'.openai/hosting.json'):
         if site not in target.resolve().parents:
             raise ValueError("Site data destination escapes its checkout")
@@ -165,12 +189,7 @@ def review_site_status():
         if manifest.get('event_id') != event_id or record.get('event_id') != event_id or record.get('manifest_sha256') != manifest_sha:
             issues.append('Review destination belongs to a different event or manifest.')
         qa = read_json(safe_relative('outputs/qa.json'), {})
-        if (qa.get('status') != 'passed' or qa.get('errors') != [] or qa.get('event_id') != event_id
-                or qa.get('input_hashes', {}).get('outputs/manifest.json') != manifest_sha):
-            issues.append('Current technical validation is missing or stale.')
-        for path, expected in qa.get('input_hashes', {}).items():
-            if digest(safe_relative(path)) != expected:
-                issues.append('Technical validation evidence changed: ' + path)
+        verify_technical_review(manifest, qa, manifest_sha, event_id)
         video = next(v for v in manifest['videos'] if v.get('format') == 'vertical')
         if record.get('video_sha256') != video.get('sha256') or digest(safe_relative(video['path'])) != video['sha256']:
             issues.append('The reviewed video changed.')

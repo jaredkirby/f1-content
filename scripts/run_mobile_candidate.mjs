@@ -62,9 +62,9 @@ try {
     rubricVersion=active.rubric_version??reference.rubric_version;
     if([promptVersion,rubricVersion].some(value=>typeof value!=='string'||!value.trim()||value.length>200))
       throw new Error('Explicit prompt and rubric versions are required.');
-    if(workId!=='openrouter-candidate-v1'&&(authorization.work_id!==workId||authorization.comparison_id!==state.comparison_id||
-       authorization.prompt_version!==promptVersion||authorization.rubric_version!==rubricVersion))
-      throw new Error('Corrected work must match its authorization.');
+    if(authorization.work_id!==workId||authorization.comparison_id!==state.comparison_id||
+       authorization.prompt_version!==promptVersion||authorization.rubric_version!==rubricVersion)
+      throw new Error('Every executable work identity must match its authorization.');
     requestPath=within(active.request.path);
     const preview=spawnSync(path.join(project,'.venv/bin/python'),['-B','-m','f1_pipeline','--workspace',root,
       'model-infer','--request',requestPath,'--budget-usd',String(input.budgetUsd)],{cwd:project,encoding:'utf8'});

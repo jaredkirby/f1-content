@@ -67,7 +67,7 @@ owns one workspace. No command silently chooses the latest race.
 | Path | Purpose |
 |---|---|
 | `f1_pipeline/` | Collection, catalog, analysis, rendering, validation, release and optional Jev client |
-| `f1_pipeline/resources/` | Packaged Jev rubrics and timeline CSS/JavaScript |
+| `f1_pipeline/resources/` | Packaged Jev rubrics, timeline CSS/JavaScript and mobile review Site templates |
 | `scripts/` | Setup, offline verification, archive QA, legacy Sprint page builders and Git guard |
 | `tests/` | Synthetic regressions for identity, integrity, release gates, transport and portability |
 | `examples/synthetic/` | Fictional config/request; no external content |

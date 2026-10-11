@@ -17,6 +17,9 @@ auth/build integration and independent Git history. Select one event workspace:
 Preparation requires a current passed technical QA receipt, exact event identity
 and unchanged video/companion/evidence hashes. It copies only the bound video,
 poster, narration and captions plus reusable [Site source](../workflows/mobile-review-site/README.md).
+The installed wheel contains the same templates as the source checkout. Preparation
+and readiness both require current render-input bindings and the exact edit-plan
+hash recorded by the manifest and technical QA.
 Generated media and private run receipts stay ignored. Preparation never deploys,
 contacts a model provider, uploads an archive or records approval.
 
@@ -103,8 +106,10 @@ verifies current authorization/output bindings and refuses existing run evidence
 before consuming a key. It sets the inference child's environment directly and
 redacts the key from output; it never writes a credential file.
 
-A corrected request uses a new work ID and authorization bound to that work ID,
-comparison, prompt/rubric versions and request bytes. `verify-execution` mode checks
+A corrected request uses a new work ID. Every execution requires authorization
+bound to its work ID, comparison, prompt/rubric versions and request bytes,
+including any use of an older work ID. Historical authorizations without these
+bindings remain evidence and cannot authorize a new execution. `verify-execution` mode checks
 those bindings offline without reading the handoff or calling a provider. Keep
 prior failed/interrupted work intact; creating a new ID does not itself authorize
 another call. Record the actual human approval first.

@@ -68,3 +68,38 @@ class MobileCandidateTests(unittest.TestCase):
             state['active_hosted_candidate']['prompt_version'] = 'unapproved-prompt'
             state_path.write_text(json.dumps(state))
             self.assertNotEqual(self.invoke(payload).returncode, 0)
+
+    def test_legacy_work_id_cannot_reuse_authorization_in_a_fresh_comparison(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            payload = self.fixture(root)
+            assets = root/'runs/model-evaluations/synthetic-comparison/candidate-v2.assets'
+            assets.mkdir(parents=True)
+            (assets/'intent.json').write_text('{"synthetic":"already attempted"}')
+            state_path = root/'runs/pilot/pilot-state.json'
+            state = json.loads(state_path.read_text())
+            state['comparison_id'] = 'unapproved-comparison'
+            state['active_hosted_candidate'].update(work_id='openrouter-candidate-v1',
+                prompt_version='unapproved-prompt', rubric_version='unapproved-rubric')
+            state_path.write_text(json.dumps(state))
+            result = self.invoke(payload)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn('verified_execution_bindings', result.stdout)
+
+    def test_old_authorization_without_identity_bindings_is_read_only_history(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            payload = self.fixture(root)
+            authorization_path = root/'runs/pilot/authorization.json'
+            authorization = json.loads(authorization_path.read_text())
+            for field in ('work_id', 'comparison_id', 'prompt_version', 'rubric_version'):
+                authorization.pop(field)
+            authorization_path.write_text(json.dumps(authorization))
+            sha = hashlib.sha256(authorization_path.read_bytes()).hexdigest()
+            state_path = root/'runs/pilot/pilot-state.json'
+            state = json.loads(state_path.read_text())
+            state['active_hosted_candidate']['work_id'] = 'openrouter-candidate-v1'
+            state['active_hosted_candidate']['spending_authorization']['sha256'] = sha
+            state_path.write_text(json.dumps(state))
+            payload['operationId'] = sha[:24]
+            self.assertNotEqual(self.invoke(payload).returncode, 0)

@@ -1,9 +1,12 @@
 # Mobile review Site source
 
-These authored files overlay the supplied Sites Vinext starter. The independent
+The authored [packaged templates](../../f1_pipeline/resources/mobile-review-site/)
+overlay the supplied Sites Vinext starter. The independent
 Site checkout, generated migration history, dependencies and media stay ignored.
 Use `prepare-review-site` from one explicit event workspace to copy the exact
 validated video, poster, narration and captions plus this application source.
+Source checkouts and installed wheels use the same templates; an incomplete
+template set fails before destination files are written.
 The command preserves the starter's auth/build integration and Site project ID.
 It never publishes or records approval. See [mobile review workflow](../../docs/mobile-review.md).
 
