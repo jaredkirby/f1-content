@@ -1,6 +1,6 @@
 # Correct the pilot's JSON request
 
-Date: 2026-10-10. Status: corrected call approved; reopening the mobile handoff.
+Date: 2026-10-10. Status: corrected request executed; candidate film published for phone feedback.
 
 ## Objective and decisions
 
@@ -50,3 +50,11 @@ existing runtime revision and audience. Client bundles contain no secret names.
 Private native deployment/check receipts retain the current source/operation hashes.
 The temporary form now awaits a new key; approval is already recorded and will
 not be requested again for this corrected request.
+
+The human resubmitted the key and the corrected request succeeded once. The
+handoff's ciphertext and IV were cleared before delivery to the local process.
+Session pickup access was renewed through native settings without replacing the
+encryption key. Actual provider metering and the raw draft are retained; the
+editorial revision and candidate handoff are tracked in
+[the candidate film plan](openrouter-candidate-film.md). No extra provider call,
+human quality approval or model promotion occurred.

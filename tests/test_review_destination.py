@@ -51,6 +51,8 @@ class ReviewDestinationTests(unittest.TestCase):
             self.assertEqual(pilot['videoSha256'],video['sha256'])
             self.assertEqual(pilot['eventId'],'synthetic-session')
             self.assertEqual(pilot['format'],'vertical')
+            self.assertEqual(pilot['reviewLabel'],'01 / REFERENCE')
+            self.assertFalse(pilot['credentialHandoffEnabled'])
             self.assertTrue((site/'public'/pilot['videoUrl'].lstrip('/')).is_file())
             self.assertEqual(prepared['status'],'prepared_awaiting_web_checks')
             self.assertNotIn(str(root),(site/'app/data/pilot.json').read_text())
@@ -91,6 +93,25 @@ class ReviewDestinationTests(unittest.TestCase):
             self.assertNotEqual(result.returncode,0)
             self.assertIn('Changed or unbound review asset', result.stderr)
             self.assertFalse((site/'app/data/pilot.json').exists())
+
+    def test_candidate_context_is_bound_to_the_selected_output_without_key_entry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/'event';site=Path(tmp)/'site';root.mkdir();site.mkdir()
+            video=self.fixture(root)
+            pilot_dir=root/'runs/pilot';pilot_dir.mkdir(parents=True)
+            state={'manifest_sha256':hashlib.sha256((root/'outputs/manifest.json').read_bytes()).hexdigest(),
+                   'video':{'sha256':video['sha256']},'review_label':'02 / CANDIDATE',
+                   'authoring_note':'Synthetic hosted draft with subscription editorial revision.'}
+            state_path=pilot_dir/'pilot-state.json';state_path.write_text(json.dumps(state))
+            result=self.invoke(root,site);self.assertEqual(result.returncode,0,result.stderr)
+            pilot=json.loads((site/'app/data/pilot.json').read_text())
+            self.assertEqual(pilot['reviewLabel'],'02 / CANDIDATE')
+            self.assertEqual(pilot['authoringNote'],state['authoring_note'])
+            self.assertFalse(pilot['credentialHandoffEnabled'])
+            previous=(site/'app/data/pilot.json').read_bytes()
+            state['authoring_note']=['invalid context'];state_path.write_text(json.dumps(state))
+            self.assertNotEqual(self.invoke(root,site).returncode,0)
+            self.assertEqual((site/'app/data/pilot.json').read_bytes(),previous)
 
     def test_stale_qa_and_missing_web_checks_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmp:

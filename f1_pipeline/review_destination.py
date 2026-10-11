@@ -72,6 +72,11 @@ def prepare_review_site(site_directory):
                  'model': 'deepseek/deepseek-v4.1-flash', 'budgetUsd': None,
                  'requestSha256': None, 'requestFileSha256': None}
     active = state.get('active_hosted_candidate', {})
+    review_label = state.get('review_label', '01 / REFERENCE')
+    authoring_note = state.get('authoring_note', 'A single reference edit, built around the qualifying sector comparison.')
+    if (not isinstance(review_label, str) or not review_label.strip() or len(review_label) > 80
+            or not isinstance(authoring_note, str) or not authoring_note.strip() or len(authoring_note) > 400):
+        raise ValueError('Review label and authoring context must be bounded text')
     authorization = active.get('spending_authorization')
     if authorization:
         authorization_path = safe_relative(authorization['path'])
@@ -117,6 +122,8 @@ def prepare_review_site(site_directory):
         assets[key] = '/media/' + filename
     pilot = {'eventId': cfg['id'], 'eventLabel': f"{cfg['country_name']} · {cfg['session_name']} · {cfg['year']}",
              'title': video['title'], 'format': 'vertical', 'duration': duration,
+             'reviewLabel': review_label, 'authoringNote': authoring_note,
+             'credentialHandoffEnabled': operation['enabled'],
              'width': video['width'], 'height': video['height'], 'version': manifest['run_id'],
              'manifestSha256': manifest_sha, 'videoSha256': video['sha256'], 'modelReceipts': receipts,
              'videoUrl': assets['path'], 'posterUrl': assets['thumbnail'], 'scriptUrl': assets['script'],
