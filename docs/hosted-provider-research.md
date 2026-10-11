@@ -36,6 +36,16 @@ Conflicting forms and unsupported options fail before a request.
 [Chat contract](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion),
 [reasoning behavior](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
 
+JSON-object mode also requires the prompt to mention JSON and instruct the model
+to return it. The preflight refuses a missing JSON mention before key access or
+execution; this check does not prove that an instruction is adequate. Supply an
+example of the desired object. DeepSeek's thinking mode ignores temperature,
+presence_penalty and frequency_penalty; request settings are declarations, not
+proof that each control took effect upstream. Preserve high reasoning for the
+quality pilot and omit an ineffective temperature control from the corrected request.
+[Upstream JSON requirements](https://api-docs.deepseek.com/guides/json_mode/),
+[upstream thinking controls](https://api-docs.deepseek.com/guides/thinking_mode/).
+
 The sent body forces nonstreaming, requests usage, and explicitly disables the
 context-compression plugin. No model list, server tools, media or arbitrary
 provider/endpoint controls are accepted. DeepInfra's n/fail_fast fields are removed.

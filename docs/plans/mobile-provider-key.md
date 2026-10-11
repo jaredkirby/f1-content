@@ -38,7 +38,7 @@ Local synthetic tests passed for AES-GCM encryption, tamper/expiry/context refus
 bounded request bodies, authenticated submission, idempotency, secret-free
 acknowledgement and atomic one-time pickup/clearing. The mobile browser verified
 mask/reveal controls, acknowledgement after reload, empty key field on replacement
-and no horizontal overflow at 320/390/768/1280 widths. No provider request ran.
+and no horizontal overflow at 320/390/768/1280 widths. No provider request ran in these checks.
 TypeScript/build and 148 shared offline tests passed. Native runtime secrets are
 masked and absent from client bundles. Local synthetic configuration was removed
 before the exact source was packaged and privately published at environment

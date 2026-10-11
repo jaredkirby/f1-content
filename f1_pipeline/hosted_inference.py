@@ -74,6 +74,9 @@ def _request_body(payload):
             raise HostedInferenceError("Invalid sampling value")
     if "response_format" in payload and payload["response_format"] != {"type": "json_object"}:
         raise HostedInferenceError("Only json_object structured output is supported")
+    if (payload.get("response_format") == {"type": "json_object"}
+            and not any("json" in item["content"].lower() for item in messages)):
+        raise HostedInferenceError("JSON-object output requires a JSON instruction in message content")
     if "reasoning_effort" in payload:
         if (not isinstance(payload["reasoning_effort"], str)
                 or payload["reasoning_effort"] not in REASONING_EFFORTS):

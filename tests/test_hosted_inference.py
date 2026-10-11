@@ -336,8 +336,24 @@ class HostedInferenceTests(unittest.TestCase):
         self.assertEqual(receipt["response_prefix_bytes"], 2000001)
         self.assertEqual(receipt["response_prefix_sha256"], hashlib.sha256(raw[:2000001]).hexdigest())
 
-    def test_json_object_mode_refuses_invalid_or_nonobject_model_text(self):
+    def test_json_mode_requires_a_prompt_instruction_before_execution(self):
         payload = {**request_payload(), "response_format": {"type": "json_object"}}
+        with self.assertRaisesRegex(hosted_inference.HostedInferenceError, "JSON instruction"):
+            hosted_inference.evaluate(payload, execute=True, budget_usd=1,
+                                      api_key="test-only", opener=OfflineOpener())
+        payload["messages"] = [{"role": "system", "content": "Return one Json object."},
+                               *payload["messages"]]
+        response = provider_response()
+        response["choices"][0]["message"]["content"] = '{"summary":"Confirmed."}'
+        opener = SyntheticOpener(SyntheticResponse(json.dumps(response).encode()))
+        receipt = hosted_inference.evaluate(payload, execute=True, budget_usd=1,
+                                            api_key="test-only", opener=opener)
+        self.assertEqual(receipt["status"], "succeeded")
+        self.assertEqual(len(opener.requests), 1)
+
+    def test_json_object_mode_refuses_invalid_or_nonobject_model_text(self):
+        payload = {**request_payload(), "response_format": {"type": "json_object"},
+                   "messages": [{"role": "user", "content": "Summarize this evidence as JSON."}]}
         for text in ("Confirmed.", "[]", '{"a": 1, "a": 2}', '{"a": NaN}', '{"a": 1e999}'):
             response = provider_response()
             response["choices"][0]["message"]["content"] = text
