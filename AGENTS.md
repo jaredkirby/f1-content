@@ -48,6 +48,10 @@ review loop. The policy remains declarative; explicit model-work commands provid
 feedback, provenance, evaluation and hosted inference without an automatic router.
 Prioritize grounded storytelling for vertical phone consumption. Present one
 output for approve/reject comments; use A/B only for very different directions.
+Every early pilot includes its version-bound mobile web destination in testing
+and feedback handoff. Read `docs/mobile-review.md`; require current browser/video,
+annotation persistence and decision checks plus a verified private Site URL.
+Browser checks do not substitute for human phone or editorial acceptance.
 Open-model candidates should use a quality API inference provider at a good price.
 For those commands, read `docs/model-workflows.md`. Read `docs/GLOSSARY.md` for
 quality terminology; local specs/plans live in `docs/plans/` as described in

@@ -1,0 +1,83 @@
+# Test the mobile destination with every early pilot
+
+The finished video and its mobile web destination are one review surface at this
+stage. Human feedback defines quality. Passing browser checks makes an output
+ready to review; it does not approve the story, voice, style or model.
+
+## Prepare one bound output
+
+Use a separate private Sites Vinext checkout, preserving its project ID, starter
+auth/build integration and independent Git history. Select one event workspace:
+
+```sh
+./scripts/f1 --workspace /absolute/path/to/event prepare-review-site \
+  --site-directory /absolute/path/to/independent/site
+```
+
+Preparation requires a current passed technical QA receipt, exact event identity
+and unchanged video/companion/evidence hashes. It copies only the bound video,
+poster, narration and captions plus reusable [Site source](../workflows/mobile-review-site/README.md).
+Generated media and private run receipts stay ignored. Preparation never deploys,
+contacts a model provider, uploads an archive or records approval.
+
+For a new checkout, install the starter's locked dependencies, generate and review
+schema-only Drizzle migrations, build and apply each pending migration to local
+D1 as documented by the Sites starter. Preserve immutable applied migration
+history. Type-check with `tsc --noEmit`; test the actual supplied preview. Publish
+through the Sites workflow only when authorized, keeping the private audience.
+Local synthetic feedback is separate from production D1 and human acceptance.
+
+## Required review checks
+
+Every early pilot handoff includes a current private HTTPS destination and real
+browser checks for phone layout, video loading/play/pause/seek, unobscured captions,
+timestamp capture, saved annotations after reload, approval/rejection history,
+copy-for-chat, stale version rejection and authenticated storage. Include a small
+phone, normal phone, tablet and desktop viewport. Browser emulation is technical
+evidence; real phone consumption and editorial acceptance remain the user's call.
+Use `node scripts/verify-feedback.mjs http://127.0.0.1:5173` inside the independent
+Site for bounded local API checks. It refuses hosted origins.
+
+Store operator browser evidence in `runs/pilot/mobile-web-checks.json`: exact
+manifest/video hashes, project ID, URL, pushed `site_commit_sha`, tested dimensions,
+observations and `checks` entries with `check` and `status`. Required check names
+are `mobile_layout`, `video_playback`, `video_seek`, `captions_unobscured`,
+`annotation_persistence`, `decision_history`, `chat_copy`, `version_rejection`,
+`authentication`, and `hosted_page_and_media`. Status `passed` describes observed
+behavior only; identify local versus hosted evidence and retain limitations.
+
+Keep the native successful private deployment response in a separate private
+receipt, with the pushed `commit_sha` and known `audience: "owner_private"`.
+Update `runs/pilot/review-destination.json` with the literal native URL and
+`browser_checks`/`deployment_receipt` path/SHA-256 links. Then run:
+
+```sh
+./scripts/f1 --workspace /absolute/path/to/event review-site-status
+```
+
+This returns exit 2 until current evidence, Site source version and successful
+private deployment agree. Re-preparation resets the handoff status. Do not hand
+off a local HTML placeholder as a tested mobile destination. Do not manufacture
+browser results, user decisions or native publication evidence.
+
+## Bring feedback into the next edit
+
+The page offers one output with approve/reject comments and timestamped notes;
+A/B remains reserved for substantially different editorial directions. Submitted
+records are append-only, user-scoped and bound to the exact manifest/video/model
+receipts. Changing a decision keeps its history. Notes do not reset a decision.
+No passive viewing analytics, device guesses or inferred taste are collected.
+
+Website feedback can be read through authenticated `/api/feedback` or the Sites
+database tools: inspect the database overview first, then read bounded rows from
+the exact returned table. Preserve the actual user text, timestamp and record ID
+in private run evidence. Bring the latest explicit human decision into
+`feedback-record` using the same current manifest and model receipts, with a
+source reference to the Site URL/row ID. An annotation alone is not approval or
+rejection. Do not import local test records as human feedback. Chat feedback uses
+the same [feedback workflow](model-workflows.md), referencing the actual message.
+
+General taste, voice changes, important user-facing preferences and model
+promotions stay in the human loop. Ask when scope is unclear; a comment on one
+version does not silently become a project-wide preference. Do not schedule
+unattended reads or create recurring jobs unless requested.

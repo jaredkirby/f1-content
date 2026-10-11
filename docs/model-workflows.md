@@ -73,6 +73,11 @@ Before showing an edit, capture its current `outputs/manifest.json` SHA-256 and
 the exact version. Present one output for approve/reject comments; A/B is reserved
 for substantially different directions. Record the actual response:
 
+At the early pilot stage, include the version-bound mobile web destination in
+testing and handoff, following [mobile review](mobile-review.md). Timestamped Site
+notes and feedback in the existing chat are equally valid human input. Technical
+browser success is not a quality approval.
+
 ```json
 {
   "event_id": "REPLACE_WITH_SELECTED_EVENT",
