@@ -99,7 +99,8 @@ It ignores user provider configuration to avoid accidental alternative billing.
 No API or other-provider fallback exists. Collection continues in the main thread
 while one model task runs independently. New briefs are requested only on changed
 evidence and at least `model_seconds` between attempts (180 seconds by default).
-A restart resets that in-process interval; a matching saved brief is reused.
+The first changed-evidence request can start immediately, regardless of host
+uptime. A restart resets the in-process interval; a matching saved brief is reused.
 
 `runs/live/model/<work-id>/` retains the exact evidence, schema, response, CLI
 execution events and started/failed/complete receipt. Input/output hashes and observed token usage bind

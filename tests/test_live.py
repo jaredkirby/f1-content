@@ -130,6 +130,7 @@ class LiveTests(unittest.TestCase):
 
         with patch('f1_pipeline.live.download', side_effect=[self.data(self.row()), self.data(self.row(), self.row('late'))]), \
              patch('f1_pipeline.live.model_brief', side_effect=slow_model), \
+             patch('f1_pipeline.live.time.monotonic', return_value=5.0), \
              patch('f1_pipeline.live.time.sleep', side_effect=pause):
             result = run_live(self.root)
         self.assertEqual(result['collector_status'], 'stopped')

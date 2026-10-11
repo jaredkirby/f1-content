@@ -20,6 +20,11 @@ The [integration plan](plans/live-main-integration.md) records combined verifica
 and publication. No film render, Site deployment, provider call or credential
 access is part of that integration. Acceptance gaps below remain unchanged.
 
+The subsequent [all-branch audit](plans/branch-preservation-audit.md) verifies
+all local/remote branch tips and retained drafts against the combined main. It
+found a Linux first-model scheduling defect in hosted CI, reproduced it with a
+short-uptime fixture, and records the repair's verification separately.
+
 ## Checkout at the original review
 
 At the original review, the checkout was `Live` at `fb7cf16`, with an

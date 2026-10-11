@@ -334,7 +334,7 @@ def run_live(root, *, once=False, no_model=False):
         model = old.get('model')
         status = {'collector_status': 'starting', 'last_success': last_poll[0] if last_poll else None, 'error': None,
                   'model_error': None, 'writer_pid': os.getpid()}
-        model_attempt = 0.0
+        model_attempt = None
         executor = ThreadPoolExecutor(max_workers=1)
         pending = None
         deadline = min(utc(c['stop_at']).timestamp(), time.time() + 3 * 3600)
@@ -364,7 +364,7 @@ def run_live(root, *, once=False, no_model=False):
                     report(root, c, db, status, model)
                 changed = not model or model['input_sha256'] != sha(encoded(bundle))
                 if (not no_model and bundle['records'] and changed and pending is None
-                        and time.monotonic() - model_attempt >= c['model_seconds']):
+                        and (model_attempt is None or time.monotonic() - model_attempt >= c['model_seconds'])):
                     model_attempt = time.monotonic()
                     status['model_status'] = 'generating'
                     report(root, c, db, status, model)
