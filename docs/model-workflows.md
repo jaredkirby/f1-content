@@ -152,7 +152,8 @@ small or synthetic sample.
 
 The [provider research](hosted-provider-research.md) describes exact model IDs,
 the official endpoint, dated rates and response limits. The first adapter supports
-text requests to DeepInfra; video/image/audio uploads and tool execution are outside
+text requests to OpenRouter with `deepseek/deepseek-v4.1-flash`;
+video/image/audio uploads and tool execution are outside
 this contract. Inputs and model text remain untrusted data.
 
 This fictional example performs no inference and writes no result:
@@ -161,6 +162,12 @@ This fictional example performs no inference and writes no result:
 ./scripts/f1 --workspace examples/synthetic model-infer \
   --request examples/synthetic/hosted-request.json
 ```
+
+Default reasoning is explicitly high, and received reasoning text is excluded.
+Verified effort choices are low/high/max, or reasoning may be explicitly disabled.
+Unsupported settings and conflicting reasoning forms fail before a call.
+The request disables context compression; observed fallback or transformations
+fail the output contract.
 
 Preview reports the sent-payload hash and a conservative cost ceiling: full listed
 context at the dated uncached input rate plus capped output. It is not a predicted
@@ -178,10 +185,12 @@ covers the displayed ceiling:
   --rubric-version ACTUAL_VERSION --evidence research/event/event_bundle.json
 ```
 
-`DEEPINFRA_API_KEY` is read only for execution. Use an existing authorized secret
+`OPENROUTER_API_KEY` is read only for execution. Use an existing authorized secret
 environment; credentials are not CLI values or receipt fields. One request is sent
-to the fixed official HTTPS endpoint. Redirects, silent fallback and retries are
-refused. The output-token, byte, time and preflight-budget limits remain bounded;
+to OpenRouter’s fixed HTTPS Chat Completions endpoint. The initial route is pinned
+to the `deepseek` serving provider, with provider fallbacks disabled and supported
+parameters required. Redirects, model fallback and client retries are refused.
+The output-token, byte, time and preflight-budget limits remain bounded;
 local checks cannot prevent an unexpected provider billing error or price change.
 
 Before the request, the CLI checks storage reserve and saves input/evidence hashes
@@ -190,8 +199,13 @@ raw request/response hashes and any generated text in a unique `.assets` directo
 then imports a provider-neutral receipt. A saved intent without a final receipt is
 an interrupted operation with unknown execution/charging state. Inspect it before
 retrying; reuse of that work ID is refused. Successful transport starts with
-eligibility `not_reviewed` and no human approval. Billing stays unknown when the
-provider supplied only an estimate. If inputs change during execution, the raw
+eligibility `not_reviewed` and no human approval.
+
+Valid `usage.cost` is retained as an OpenRouter-reported USD-credit charge. It
+becomes actual request cost only when `is_byok` is explicitly false; BYOK or
+missing billing scope leaves the full actual cost unknown. Dated peak-rate
+estimates stay separate. Credit-purchase fees are outside the inference charge.
+If inputs change during execution, the raw
 provider evidence remains but a valid model-work import cannot be claimed.
 
 ## Verification and next quality decision

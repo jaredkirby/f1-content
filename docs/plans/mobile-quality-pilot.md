@@ -61,3 +61,14 @@ API access for the later candidate; preserve the same frozen brief/evidence.
   The current environment has no DeepInfra key. No production defaults changed.
 - Exact video/manifest/receipt bindings and evaluation-before-feedback live in
   the private workspace's `runs/pilot/pilot-state.json` and model evaluation receipt.
+
+## Subsequent infrastructure update
+
+The user selected OpenRouter and `deepseek/deepseek-v4.1-flash`. The original
+DeepInfra/Qwen observations above remain run history. The active candidate now has
+a separate unexecuted OpenRouter request/preflight against the same frozen prompt,
+with high reasoning and an 8,192-token output cap. Its conservative ceiling is
+$0.3244032; no higher budget was implicitly authorized and no key was checked.
+See [the migration plan](openrouter-inference.md) for current contracts. The reference
+video and private mobile destination remain bound to the existing exact version;
+quality feedback, hosted sign-in verification and model promotion remain pending.

@@ -3,6 +3,7 @@ import unittest
 import hashlib
 import io
 import json
+import os
 import urllib.error
 import urllib.request
 import urllib.response
@@ -12,7 +13,7 @@ from unittest.mock import patch
 from f1_pipeline import hosted_inference
 
 
-MODEL = "openai/gpt-oss-120b"
+MODEL = "deepseek/deepseek-v4.1-flash"
 
 
 def request_payload():
@@ -31,7 +32,7 @@ def provider_response():
             "choices": [{"index": 0, "message": {"role": "assistant", "content": "Confirmed."},
                          "finish_reason": "stop"}],
             "usage": {"prompt_tokens": 12, "completion_tokens": 4, "total_tokens": 16,
-                      "estimated_cost": 0.000001124}}
+                      "cost": 0.000001124, "is_byok": False}}
 
 
 class SyntheticResponse(io.BytesIO):
@@ -74,7 +75,7 @@ class HostedInferenceTests(unittest.TestCase):
         self.assertFalse(receipt["inference_attempted"])
         self.assertFalse(receipt["accepted_model_result"])
         self.assertEqual(receipt["attempts"], 0)
-        self.assertEqual(receipt["cost"]["preflight_ceiling_usd"], 0.004866664)
+        self.assertEqual(receipt["cost"]["preflight_ceiling_usd"], 0.3146928)
         self.assertIsNone(receipt["cost"]["actual_billing_usd"])
         self.assertNotIn("result", receipt)
 
@@ -94,24 +95,105 @@ class HostedInferenceTests(unittest.TestCase):
                    {**request_payload(), "temperature": float("nan")},
                    {**request_payload(), "top_p": True},
                    {**request_payload(), "response_format": {"type": "json_schema"}},
-                   {**request_payload(), "reasoning_effort": "high"}]
+                   {**request_payload(), "reasoning_effort": "medium"}]
         for payload in invalid:
             with self.subTest(payload_type=type(payload).__name__), self.assertRaises(hosted_inference.HostedInferenceError):
                 hosted_inference.preflight(payload)
 
-    def test_exact_shortlist_models_have_independent_full_context_costs(self):
-        cases = [("deepseek-ai/DeepSeek-V4-Pro-0813", 1.3634088),
-                 ("Qwen/Qwen3.5-397B-A17B", 0.1182648),
-                 ("deepseek-ai/DeepSeek-V3.2", 0.0426364),
-                 (MODEL, 0.004866664)]
-        for model, ceiling in cases:
-            payload = {**request_payload(), "model": model}
-            if model == "deepseek-ai/DeepSeek-V4-Pro-0813":
-                payload["reasoning_effort"] = "high"
-            with self.subTest(model=model):
-                receipt = hosted_inference.preflight(payload)
-                self.assertEqual(receipt["requested_model"], model)
-                self.assertEqual(receipt["cost"]["preflight_ceiling_usd"], ceiling)
+    def test_exact_requested_model_and_verified_reasoning_efforts(self):
+        for effort in ('low', 'high', 'max'):
+            receipt = hosted_inference.preflight({**request_payload(), 'reasoning_effort': effort})
+            self.assertEqual(receipt['requested_model'], MODEL)
+            self.assertEqual(receipt['cost']['preflight_ceiling_usd'], 0.3146928)
+        for model in ('openai/gpt-oss-120b', 'deepseek-ai/DeepSeek-V4-Pro-0813', MODEL + ':free'):
+            with self.assertRaises(hosted_inference.HostedInferenceError):
+                hosted_inference.preflight({**request_payload(), 'model': model})
+
+    def test_reasoning_forms_are_explicit_and_conflicts_fail_before_a_call(self):
+        for reasoning in ({'enabled': False}, {'effort': 'max', 'exclude': False}):
+            receipt = hosted_inference.preflight({**request_payload(), 'reasoning': reasoning})
+            for key,value in reasoning.items():
+                self.assertEqual(receipt['effective_settings']['reasoning'][key],value)
+        for reasoning in ({'effort':'medium'}, {'enabled':'false'}, {'max_tokens':100},
+                          {'effort':[], 'exclude':True}, {'effort':'high','enabled':False}):
+            with self.subTest(reasoning=reasoning), self.assertRaises(hosted_inference.HostedInferenceError):
+                hosted_inference.evaluate({**request_payload(),'reasoning':reasoning},opener=OfflineOpener())
+        with self.assertRaises(hosted_inference.HostedInferenceError):
+            hosted_inference.preflight({**request_payload(),'reasoning':{'enabled':False},'reasoning_effort':'high'})
+
+    def test_only_openrouter_environment_credential_is_used(self):
+        with patch.dict(os.environ, {'DEEPINFRA_API_KEY':'legacy-test-key'}, clear=True):
+            receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,opener=OfflineOpener())
+            self.assertFalse(receipt['inference_attempted'])
+            self.assertEqual(receipt['error']['code'],'credential_unavailable')
+        opener=SyntheticOpener(SyntheticResponse(json.dumps(provider_response()).encode()))
+        with patch.dict(os.environ, {'OPENROUTER_API_KEY':'openrouter-test-only'}, clear=True):
+            receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,opener=opener)
+        self.assertEqual(receipt['status'],'succeeded')
+        self.assertEqual(opener.requests[0][0].get_header('Authorization'),'Bearer openrouter-test-only')
+        self.assertNotIn('openrouter-test-only',json.dumps(receipt))
+
+    def test_credit_charge_is_not_a_rate_estimate_or_a_complete_byok_bill(self):
+        for byok, actual in ((False,0.002),(True,None),(None,None)):
+            response=provider_response();response['usage'].update(cost=0.002)
+            if byok is None:response['usage'].pop('is_byok')
+            else:response['usage']['is_byok']=byok
+            receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+                api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+            self.assertEqual(receipt['status'],'succeeded')
+            self.assertEqual(receipt['cost']['provider_reported_cost_usd'],0.002)
+            self.assertEqual(receipt['cost']['actual_billing_usd'],actual)
+            self.assertEqual(receipt['cost']['usage_rate_estimate_usd'],0.0000084)
+        response=provider_response();response['usage'].pop('cost')
+        receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+            api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+        self.assertIsNone(receipt['cost']['actual_billing_usd'])
+
+    def test_canonical_alias_and_observed_provider_are_retained_without_inference(self):
+        response=provider_response();response['model']='deepseek/deepseek-v4.1-flash-20260910'
+        response['provider']='DeepSeek'
+        response['openrouter_metadata']={'requested':MODEL,'strategy':'direct','attempt':1,
+            'is_byok':False,'endpoints':{'available':[{'model':response['model'],'provider':'DeepSeek','selected':True}]}}
+        receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+            api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+        self.assertEqual(receipt['status'],'succeeded')
+        self.assertEqual(receipt['observed_model'],response['model'])
+        self.assertEqual(receipt['observed_serving_provider'],'DeepSeek')
+        self.assertEqual(receipt['observed_router_attempts'],1)
+        unobserved=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+            api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(provider_response()).encode())))
+        self.assertIsNone(unobserved['observed_serving_provider'])
+        self.assertIsNone(unobserved['observed_router_attempts'])
+
+    def test_unrequested_routing_and_transformations_fail_with_charge_retained(self):
+        variants=[{'provider':'another-provider'}, {'openrouter_metadata':{'attempt':2}},
+                  {'openrouter_metadata':{'strategy':'fallback'}}, {'openrouter_metadata':{'strategy':[]}},
+                  {'openrouter_metadata':{'requested':'different/model'}},
+                  {'openrouter_metadata':{'pipeline':[{'type':'context_compression'}]}},
+                  {'openrouter_metadata':{'endpoints':{'available':[{'selected':True,'model':[]}]}}},
+                  {'openrouter_metadata':{'is_byok':True}}, {'model':[]}]
+        for variant in variants:
+            response={**provider_response(),**variant}
+            with self.subTest(variant=variant):
+                receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+                    api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+                self.assertEqual(receipt['status'],'failed')
+                self.assertFalse(receipt['accepted_model_result'])
+                self.assertEqual(receipt['cost']['provider_reported_cost_usd'],0.000001124)
+                self.assertEqual(receipt['usage']['input_tokens'],12)
+
+    def test_valid_token_or_charge_measurements_survive_other_metering_failures(self):
+        response=provider_response();response['usage']['total_tokens']=999
+        receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+            api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+        self.assertEqual(receipt['status'],'failed')
+        self.assertEqual(receipt['cost']['actual_billing_usd'],0.000001124)
+        response=provider_response();response['usage']['cost']=-1
+        receipt=hosted_inference.evaluate(request_payload(),execute=True,budget_usd=1,
+            api_key='test-only',opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
+        self.assertEqual(receipt['status'],'failed')
+        self.assertEqual(receipt['usage']['total_tokens'],16)
+        self.assertIsNone(receipt['cost']['actual_billing_usd'])
 
     def test_execution_requires_finite_budget_timeout_and_explicit_boolean(self):
         cases = [{"execute": True}, {"execute": "yes", "budget_usd": 1},
@@ -152,18 +234,24 @@ class HostedInferenceTests(unittest.TestCase):
         self.assertEqual(receipt["result"]["output_text"], "Confirmed.")
         self.assertEqual(receipt["result"]["output_bytes"], 10)
         self.assertEqual(receipt["response_sha256"], hashlib.sha256(raw).hexdigest())
-        self.assertEqual(receipt["cost"]["usage_rate_estimate_usd"], 0.000001124)
-        self.assertEqual(receipt["cost"]["provider_estimated_cost_usd"], 0.000001124)
-        self.assertIsNone(receipt["cost"]["actual_billing_usd"])
+        self.assertEqual(receipt["cost"]["usage_rate_estimate_usd"], 0.0000084)
+        self.assertIsNone(receipt["cost"]["provider_estimated_cost_usd"])
+        self.assertEqual(receipt["cost"]["provider_reported_cost_usd"], 0.000001124)
+        self.assertEqual(receipt["cost"]["actual_billing_usd"], 0.000001124)
         self.assertNotIn("test-only", json.dumps(receipt))
         sent, timeout = opener.requests[0]
-        self.assertEqual(sent.full_url, "https://api.deepinfra.com/v1/openai/chat/completions")
+        self.assertEqual(sent.full_url, "https://openrouter.ai/api/v1/chat/completions")
         self.assertEqual(sent.get_method(), "POST")
         self.assertEqual(timeout, 20)
         body = json.loads(sent.data)
-        self.assertEqual(body["n"], 1)
+        self.assertNotIn("n", body)
         self.assertFalse(body["stream"])
-        self.assertTrue(body["fail_fast"])
+        self.assertNotIn('fail_fast', body)
+        self.assertEqual(body['provider']['only'], ['deepseek'])
+        self.assertFalse(body['provider']['allow_fallbacks'])
+        self.assertTrue(body['provider']['require_parameters'])
+        self.assertEqual(body['provider']['max_price'], {'prompt': 0.3, 'completion': 1.2})
+        self.assertEqual(sent.get_header('Authorization'), 'Bearer test-only')
         self.assertNotIn("service_tier", body)
         self.assertEqual(receipt["request_sha256"], hashlib.sha256(sent.data).hexdigest())
 
@@ -171,8 +259,10 @@ class HostedInferenceTests(unittest.TestCase):
         raw = json.dumps(provider_response()).encode()
         responses = [SyntheticResponse(raw, status=302),
                      SyntheticResponse(raw, url="https://other.example/"),
-                     urllib.error.HTTPError(hosted_inference.ENDPOINT, 429, "private-error", {}, io.BytesIO(b"private-error")),
                      urllib.error.URLError("private-error"), TimeoutError("private-error")]
+        responses += [urllib.error.HTTPError(hosted_inference.ENDPOINT, status, "private-error", {},
+                                             io.BytesIO(b"private-error"))
+                      for status in (400,401,402,403,404,429,502)]
         for response in responses:
             opener = FailingOpener(response) if isinstance(response, Exception) else SyntheticOpener(response)
             with self.subTest(response_type=type(response).__name__):
@@ -188,9 +278,9 @@ class HostedInferenceTests(unittest.TestCase):
     def test_invalid_response_usage_or_spending_never_becomes_an_output(self):
         cases = []
         for key, value in [("prompt_tokens", True), ("completion_tokens", -1),
-                           ("total_tokens", 15), ("estimated_cost", float("nan")),
-                           ("estimated_cost", -1), ("estimated_cost", True),
-                           ("estimated_cost", 2),
+                           ("total_tokens", 15), ("cost", float("nan")),
+                           ("cost", -1), ("cost", True),
+                           ("cost", 2),
                            ("prompt_tokens_details", {"cached_tokens": 13}),
                            ("completion_tokens_details", {"reasoning_tokens": 5}),
                            ("completion_tokens_details", {"reasoning_tokens": True})]:
@@ -221,10 +311,9 @@ class HostedInferenceTests(unittest.TestCase):
 
     def test_reported_cache_and_reasoning_tokens_are_subsets_not_extra_charges(self):
         response = provider_response()
-        response["model"] = "Qwen/Qwen3.5-397B-A17B"
         response["usage"].update(prompt_tokens_details={"cached_tokens": 8},
                                  completion_tokens_details={"reasoning_tokens": 2},
-                                 estimated_cost=0.00001556)
+                                 cost=0.000006048)
         payload = {**request_payload(), "model": response["model"]}
         receipt = hosted_inference.evaluate(payload, execute=True, budget_usd=1,
             api_key="test-only", opener=SyntheticOpener(SyntheticResponse(json.dumps(response).encode())))
@@ -232,7 +321,7 @@ class HostedInferenceTests(unittest.TestCase):
         self.assertEqual(receipt["usage"]["output_tokens"], 4)
         self.assertEqual(receipt["usage"]["reasoning_tokens"], 2)
         self.assertEqual(receipt["usage"]["cached_input_tokens"], 8)
-        self.assertEqual(receipt["cost"]["usage_rate_estimate_usd"], 0.00001556)
+        self.assertEqual(receipt["cost"]["usage_rate_estimate_usd"], 0.000006048)
 
     def test_oversized_response_is_hashed_only_as_an_explicit_prefix(self):
         response = provider_response()
@@ -306,8 +395,9 @@ class HostedInferenceTests(unittest.TestCase):
                 self.assertEqual(receipt["requested_model"], MODEL)
                 self.assertEqual(receipt["usage"]["input_tokens"], 12)
                 self.assertEqual(receipt["usage"]["output_tokens"], 4)
-                self.assertEqual(receipt["cost"]["provider_estimated_cost_usd"], 0.000001124)
-                self.assertIsNone(receipt["cost"]["actual_billing_usd"])
+                self.assertIsNone(receipt["cost"]["provider_estimated_cost_usd"])
+                self.assertEqual(receipt["cost"]["provider_reported_cost_usd"], 0.000001124)
+                self.assertEqual(receipt["cost"]["actual_billing_usd"], 0.000001124)
                 self.assertEqual(receipt["response_sha256"], hashlib.sha256(raw).hexdigest())
                 self.assertNotIn("result", receipt)
 

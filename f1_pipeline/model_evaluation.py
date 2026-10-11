@@ -352,7 +352,7 @@ def _provider_observation(receipt):
     if not isinstance(receipt, dict) or receipt.get("schema_version") != "f1.hosted-inference.v1":
         raise ValueError("Incomplete execution has an invalid raw provider receipt schema")
     observation = {"schema_version": receipt["schema_version"], "usage": None, "cost": None}
-    for field in ("provider", "status", "observed_model"):
+    for field in ("provider", "status", "observed_model", "observed_serving_provider", "observed_generation_id"):
         value = receipt.get(field)
         if value is not None and (not isinstance(value, str) or not value.strip() or len(value) > 256):
             raise ValueError("Invalid raw provider receipt " + field)
@@ -382,11 +382,15 @@ def _provider_observation(receipt):
         if not isinstance(cost, dict):
             raise ValueError("Invalid raw provider cost")
         measured = {}
-        for field in ("provider_estimated_cost_usd", "usage_rate_estimate_usd", "actual_billing_usd"):
+        for field in ("provider_estimated_cost_usd", "provider_reported_cost_usd", "usage_rate_estimate_usd", "actual_billing_usd"):
             value = cost.get(field)
             if value is not None and (type(value) not in (int, float) or not math.isfinite(value) or value < 0):
                 raise ValueError("Invalid raw provider cost " + field)
             measured[field] = value
+        byok = cost.get("is_byok")
+        if byok is not None and type(byok) is not bool:
+            raise ValueError("Invalid raw provider BYOK observation")
+        measured["is_byok"] = byok
         observation["cost"] = measured
     elapsed = receipt.get("elapsed_seconds")
     if elapsed is not None and (type(elapsed) not in (int, float) or not math.isfinite(elapsed) or elapsed < 0):

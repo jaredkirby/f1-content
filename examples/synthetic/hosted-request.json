@@ -1,5 +1,5 @@
 {
-  "model": "openai/gpt-oss-120b",
+  "model": "deepseek/deepseek-v4.1-flash",
   "messages": [
     {
       "role": "system",
@@ -10,5 +10,6 @@
       "content": "Fictional offline example, not race evidence: session synthetic-session at Example on 2026-10-10. Summarize the stated identity and say no race result was supplied."
     }
   ],
-  "max_tokens": 256
+  "max_tokens": 256,
+  "reasoning_effort": "high"
 }

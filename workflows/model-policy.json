@@ -49,7 +49,10 @@
     "release": "local release contracts remain implemented; hash-bound human acceptance is a separate explicitly recorded milestone"
   },
   "efficiency_candidates": {
-    "bounded_text_tasks": ["gpt-6.1-sol at lower reasoning effort", "gpt-6-luna at high reasoning effort"],
+    "bounded_text_tasks": [
+      "gpt-6.1-sol at lower reasoning effort",
+      "gpt-6-luna at high reasoning effort"
+    ],
     "hard_task_escalation": "gpt-6-astra when available and justified by quality difficulty",
     "promotion": "held-out evidence and explicit human approval; candidate names are not quality rankings",
     "cache_key_inputs": [
@@ -90,10 +93,15 @@
     "hosted_text_adapter_implemented": true,
     "live_quality_evaluation_executed": false,
     "serving": "hosted API inference; no local model installation target",
-    "proposed_provider": "DeepInfra",
-    "alternative_provider": "Together only if quality, reliability or accepted-output cost justifies it",
-    "capabilities": ["text judgments and generation", "vision where needed", "transcription where needed", "narration"],
-    "candidates_not_promoted": ["deepseek-ai/DeepSeek-V4-Pro-0813", "Qwen/Qwen3.5-397B-A17B", "deepseek-ai/DeepSeek-V3.2", "openai/gpt-oss-120b", "openai/whisper-large-v3", "hexgrad/Kokoro-82M"],
+    "capabilities": [
+      "text judgments and generation",
+      "vision where needed",
+      "transcription where needed",
+      "narration"
+    ],
+    "candidates_not_promoted": [
+      "deepseek/deepseek-v4.1-flash"
+    ],
     "promotion_requires": [
       "verified license, exact provider/model/endpoint/settings and exposed serving revision/quantization; unavailable hosted weight hashes stay unknown",
       "held-out source-grouped quality evaluation",
@@ -102,6 +110,12 @@
       "measured API cost/latency/reliability and full workflow/tool capability"
     ],
     "complete_when": "every required inference capability uses a human-approved open model without a closed-model fallback",
-    "openness_definition": "permissively licensed open weights/code hosted by an inference API; do not claim complete training-source openness"
+    "openness_definition": "permissively licensed open weights/code hosted by an inference API; do not claim complete training-source openness",
+    "selected_provider": "OpenRouter",
+    "selected_model": "deepseek/deepseek-v4.1-flash",
+    "selected_serving_provider": "deepseek",
+    "selection_basis": "explicit user instruction; candidate route, not quality promotion",
+    "provider_fallbacks": false,
+    "adapter_scope": "bounded text; vision, transcription and narration require separate adapters and human evaluation"
   }
 }

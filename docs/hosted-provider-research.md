@@ -1,137 +1,110 @@
-# Hosted inference provider contract
+# OpenRouter hosted inference contract
 
-Checked 2026-10-10 against primary DeepInfra documentation. These are API facts
-and implementation limits, not an F1 output-quality benchmark. No inference,
-credential access, account change or media upload was performed.
+Checked 2026-10-10 against official OpenRouter documentation, live public model and
+endpoint metadata, and the upstream model card. This supersedes the active
+DeepInfra contract. Historical receipts retain their original provider and rates.
+Public GETs were performed; no inference, key access, account change or media upload.
 
-## Explicit execution and billing
+## Selected route and capability
 
-DeepInfra documents a bearer-token POST to
-`https://api.deepinfra.com/v1/openai/chat/completions`. Request fields include
-`model`, `messages`, `max_tokens`, `temperature`, `top_p` and `response_format`.
-Leaving `service_tier` unset selects standard scheduling and pricing. Its
-`fail_fast` option avoids capacity queueing; it does not authorize fallback.
-[Chat completion contract](https://docs.deepinfra.com/chat/overview).
+The user selected `deepseek/deepseek-v4.1-flash`. Its public catalog identifies
+canonical slug `deepseek/deepseek-v4.1-flash-20260910`, a 1,048,576-token context,
+image/text input and text output, optional reasoning with low/high/max effort,
+and default high effort. The upstream model card lists MIT for code and weights.
+The project adapter supports bounded text only. Advertised vision/tool capability
+is not an implemented or authorized media/tool workflow.
+[Model guide](https://openrouter.ai/deepseek/deepseek-v4.1-flash/llms.txt),
+[public catalog](https://openrouter.ai/api/v1/models),
+[upstream card](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash).
 
-This is a separately billed provider API. OpenAI-compatible request syntax does
-not use the user's signed-in Codex ChatGPT subscription. Preserve subscription
-work in supported Codex surfaces and require a concrete authorized provider,
-request and budget before sending a request.
+The initial serving route uses `provider.only: ["deepseek"]`,
+`allow_fallbacks: false` and `require_parameters: true`. Other OpenRouter providers
+list different quantizations and prices. The selected endpoint's precision is
+unknown; pinning it does not prove a runtime/weight fingerprint or F1 quality.
+An alternative provider is a separate quality comparison, not an automatic fallback.
+[Provider routing](https://openrouter.ai/docs/guides/routing/provider-selection).
 
-## Exact initial models and rates
+## Request and response
 
-The following standard USD rates are per million tokens. Cached rates are
-documented for reference; preflight spending estimates assume uncached input.
-Model listings are provider claims about serving precision/context, not observed
-runtime fingerprints or evidence of human-accepted quality.
+POST `https://openrouter.ai/api/v1/chat/completions` with JSON and
+`Authorization: Bearer $OPENROUTER_API_KEY`. The project requires exact model,
+1–64 nonempty system/user/assistant text messages and `max_tokens` from 1–16,384.
+Optional controls are temperature, top_p, JSON-object output and one reasoning
+configuration. Default reasoning is high with reasoning text excluded. Effort
+accepts low/high/max; reasoning may be explicitly disabled with enabled:false.
+Conflicting forms and unsupported options fail before a request.
+[Chat contract](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion),
+[reasoning behavior](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
 
-| Exact model ID | Input / output / cached input | Listed context | Listed precision | Primary source |
-|---|---:|---:|---|---|
-| `deepseek-ai/DeepSeek-V4-Pro-0813` | $1.30 / $2.60 / $0.10 | 1,048,576 | FP8 | [Provider model/API](https://deepinfra.com/deepseek-ai/DeepSeek-V4-Pro-0813/api) |
-| `Qwen/Qwen3.5-397B-A17B` | $0.45 / $3.00 / $0.22 | 262,144 | FP8 | [Provider model/API](https://deepinfra.com/Qwen/Qwen3.5-397B-A17B/api) |
-| `deepseek-ai/DeepSeek-V3.2` | $0.26 / $0.38 / $0.13 | 163,840 | FP4 | [Provider model/API](https://deepinfra.com/deepseek-ai/DeepSeek-V3.2/api) |
-| `openai/gpt-oss-120b` | $0.037 / $0.17 / not listed | 131,072 | BF16 | [Provider model/API](https://deepinfra.com/openai/gpt-oss-120b/api) |
+The sent body forces nonstreaming, requests usage, and explicitly disables the
+context-compression plugin. No model list, server tools, media or arbitrary
+provider/endpoint controls are accepted. DeepInfra's n/fail_fast fields are removed.
+Exactly one completed assistant choice with stop finish reason is required.
+Known catalog alias/canonical identity is retained exactly as observed; an
+unexpected model, refusal, tool call, truncation or invalid JSON-object output
+fails the result contract. No internal retry or redirect is allowed.
+[Compression contract](https://openrouter.ai/docs/guides/features/message-transforms).
 
-DeepSeek V4 Pro is the initial strong text candidate; Qwen is the strong
-text/vision candidate. The other two are value comparators. Each model's API page
-shows the exact requested/returned model field and a usage example with
-`prompt_tokens`, `completion_tokens`, `total_tokens` and `estimated_cost`.
-That last field is an estimate; it is not a settled account bill. A missing
-hosted weight/build fingerprint remains unknown.
+Opt-in `X-OpenRouter-Metadata: enabled` exposes routing observations when available.
+Keep observed serving provider and router attempt count unknown when absent.
+Observed provider/model switching, multiple attempts or transformations fail the
+output contract. Preserve valid metering despite that failure. Generation IDs are
+retained when valid; serving revision and quantization remain unknown.
+[Router metadata](https://openrouter.ai/docs/guides/features/router-metadata).
 
-## Reasoning, structure and modality boundaries
+## Price and cost meaning
 
-DeepInfra documents `reasoning_effort` values `none`, `low`, `medium` and `high`,
-explicitly lists DeepSeek V4 Pro as a supported reasoning model, and says
-reasoning tokens are billed as output. Avoid double-counting a reasoning detail
-on top of aggregate output usage. A received reasoning trace is untrusted model
-content, not decision evidence or user feedback.
-[Reasoning contract](https://docs.deepinfra.com/chat/reasoning).
+The selected DeepSeek endpoint advertises discounted windows and peak USD rates:
 
-The API documents `json_object` and `json_schema` output modes across supported
-models. Provider JSON generation does not replace local validation, factual
-checks or human review. Start with text or JSON-object output; unsupported
-settings must fail rather than silently downgrade.
-[Structured output contract](https://docs.deepinfra.com/chat/structured-outputs).
+| Input / output / cached input per 1M tokens | Context | Serving precision |
+|---|---:|---|
+| $0.30 / $1.20 / $0.006 | 1,048,576 | Unknown |
 
-Qwen's listing labels it multimodal. The vision API accepts a public image URL or
-base64 image through content parts. This establishes provider capability, not
-permission to upload local/private media or dereference arbitrary URLs. The first
-adapter remains text-only; a future vision adapter needs explicit bounded media,
-input/hash, token-accounting and authorization contracts. Speech is a separate
-later adapter and listening evaluation.
-[Vision contract](https://docs.deepinfra.com/chat/vision).
+Use peak rates for the conservative preflight ceiling: full context at uncached
+input price plus capped output. Send provider max_price caps of prompt:0.30 and
+completion:1.20 (units: USD per million). At 8,192 output tokens, the ceiling is
+$0.3244032; this is neither a token prediction nor an authorized spend. Byte limits
+are not token measurements. Refresh metadata before a paid run. These controls
+cannot prevent a provider billing defect.
+[Endpoint snapshot source](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20260910/endpoints),
+[price filter](https://openrouter.ai/docs/guides/routing/provider-selection#max-price).
 
-## Spending and evidence rules
+Valid usage.cost is an OpenRouter-reported credit charge, distinct from a local
+peak-rate estimate. Record it as actual request cost only with explicitly false
+is_byok (usage or consistent router metadata). BYOK or missing scope leaves the
+full actual inference cost unknown while retaining the reported OpenRouter charge.
+Credit-purchase fees and other account expenses are outside this request charge.
+Missing cost remains null, not zero. Valid charges survive malformed token usage;
+valid token usage survives invalid charges. Cache and reasoning counts are subsets
+of aggregate input/output usage and are never added twice.
+[USD-credit billing](https://openrouter.ai/support),
+[usage response schema](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion).
 
-`max_tokens` bounds generated tokens; the docs describe model-dependent context
-limits and no request-level dollar ceiling or input-token cap. Request byte limits
-are resource caps, never actual token measurements. Without a verified tokenizer,
-preflight uses the full listed model context at uncached input price plus the
-requested maximum output at output price. This intentionally conservative ceiling
-is conditional on the recorded rates and provider honoring token limits; refresh
-the rates before approving a paid execution. Actual usage is checked afterward,
-and a ceiling breach is a failed receipt. Local validation cannot prevent an
-unexpected provider billing error.
-[Token and scheduling limits](https://docs.deepinfra.com/chat/overview).
+## Execution and evidence boundaries
 
-DeepInfra reports cached input at
-`usage.prompt_tokens_details.cached_tokens`, a subset of prompt usage. Preserve
-the reported value when present; absence means unknown, not an observed cache
-miss. Cache-related cost savings require actual reported accounting.
-[Cache usage contract](https://docs.deepinfra.com/chat/prompt-caching).
+`preflight(payload, budget_usd=None)` is offline and reads no key.
+`evaluate(payload, execute=False, budget_usd=None, api_key=None, timeout=20, opener=None)`
+requires explicit execute:true, a positive finite budget covering the ceiling and
+an existing OpenRouter key for one call. Resource caps remain 131,072 request bytes,
+2,000,000 response bytes and 0.001–60 seconds. Missing keys produce an unattempted
+failure; transport/HTTP/schema failures retain safe evidence without echoing raw
+error bodies or credentials. Rate limiting is returned for an explicit later
+operator decision; no automatic backoff can duplicate an ambiguous charge.
 
-Use one bounded nonstreaming request, refuse redirects, and do not retry an
-ambiguous failure or switch model/provider. Record exact request/response byte
-hashes, elapsed time, actual usage when valid, and unsuccessful attempts without
-fabricating a model result. Do not log credentials or echo error bodies. A
-transport/schema success is not factual validity or human acceptance.
+Receipts retain `f1.hosted-inference.v1`, OpenRouter provider, endpoint, exact
+request/response hashes, effective settings, catalog identity, observed model,
+route/generation observations, actual usage, peak estimates and explicit charge
+scope. Oversized responses expose only labeled prefix hashes. accepted_model_result
+means the transport/output contract passed, not grounding or human approval.
 
-DeepInfra states that ordinary inference inputs/outputs remain in memory and are
-not used for training for these model families; its bulk APIs have different
-retention. Those policies do not grant permission to transmit private feedback.
-Keep feedback local and send only explicitly selected evidence needed by the task.
-[Provider privacy policy](https://docs.deepinfra.com/account/data-privacy).
+The CLI selects one event workspace, checks storage before a call, saves immutable
+input/evidence/intent/result receipts and imports provider-neutral model work.
+Recorded request charges use cost_source:provider_receipt. Interrupted work retains
+raw measurements without inventing an attempt or complete efficiency total. The
+Codex subscription remains first; OpenRouter is separately billed. Never send raw
+private feedback by default or treat account/provider settings as user approval.
 
-## Implemented adapter interface
-
-`f1_pipeline.hosted_inference.preflight(payload, budget_usd=None)` validates
-locally. `evaluate(payload, execute=False, budget_usd=None, api_key=None,
-timeout=20, opener=None)` uses the same default and never reads a credential or
-contacts a provider during preflight. Execution requires `execute=True`, a
-positive finite budget covering the context ceiling, and an existing DeepInfra
-credential. Missing/invalid credentials produce an unattempted failure. Invalid
-local input raises `HostedInferenceError`; unsuccessful execution returns a
-failed receipt. The CLI owns workspace selection and immutable persistence.
-
-Required request fields are exact `model`, nonempty text `messages` (roles
-system/user/assistant), and integer `max_tokens` from 1 to 16,384. Optional
-sampling fields are `temperature` and `top_p`; structured output accepts only
-`{"type":"json_object"}`. Explicit `reasoning_effort` is currently supported
-only for DeepSeek V4 Pro, whose provider support was directly verified. Other
-fields, multimodal content, arbitrary endpoints, streaming and service tiers are
-refused. Local caps are 64 messages, 131,072 request bytes, 2,000,000 response
-bytes and a timeout from 0.001 to 60 seconds. Byte counts are never token counts.
-
-Receipts use `f1.hosted-inference.v1` with preflight/succeeded/failed status,
-request and full-response hashes, attempts, observed model, output text bytes/hash,
-validated aggregate usage and optional cached/reasoning token subsets. Unknown
-details remain null. Empty, whitespace-padded or malformed provider model identity
-remains unknown; its raw response hash and valid metering are still retained. An
-oversized body records an explicitly named prefix hash,
-never a hash mislabeled as the complete response. Failed identity, truncation,
-output shape or token-limit checks retain valid usage and response hashes while
-omitting the model result. HTTP failures preserve bounded body hashes, without
-echoing the bodies. Ambiguous transport failures retain unknown execution/billing.
-
-Cost metadata retains the exact dated rate snapshot, preflight ceiling, a
-usage-based estimate, a separately reported provider estimate and
-`actual_billing_usd: null`. Cache/reasoning subsets are not double-counted; absent
-cache details mean an uncached assumption for the local estimate. No field
-claims a settled bill. `accepted_model_result` means the transport/output contract
-passed; it never means grounded factual correctness or human acceptance.
-
-Fifteen offline transport tests exercise those public interfaces using synthetic
-HTTP responses, including the standard library's redirect processing with a fake
-HTTPS transport. No tests mock this project's internal adapter objects, contact
-an inference endpoint, load real credentials or upload evidence/feedback.
+Synthetic tests exercise public HTTP/CLI boundaries, including real standard-library
+redirect handling with a fake HTTPS transport. They do not establish live model
+quality, account access, provider reliability or real phone acceptance. A completed
+candidate edit still needs the mobile destination and explicit user review.

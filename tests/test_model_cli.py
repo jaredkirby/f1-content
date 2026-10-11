@@ -79,7 +79,7 @@ class ModelWorkflowCLI(unittest.TestCase):
             self.workspace(root)
             request = root / 'request.json'
             request.write_text(json.dumps({
-                'model': 'openai/gpt-oss-120b',
+                'model': 'deepseek/deepseek-v4.1-flash',
                 'messages': [{'role': 'user', 'content': 'Synthetic evidence only.'}],
                 'max_tokens': 64,
             }))
@@ -146,7 +146,7 @@ class ModelWorkflowCLI(unittest.TestCase):
             root = Path(tmp)
             self.workspace(root)
             request = root / 'hosted-request.json'
-            request.write_text(json.dumps({'model': 'openai/gpt-oss-120b',
+            request.write_text(json.dumps({'model': 'deepseek/deepseek-v4.1-flash',
                 'messages': [{'role': 'user', 'content': 'Synthetic request only.'}], 'max_tokens': 64}))
             script = '''
 import io, json, sys
@@ -156,24 +156,24 @@ class Response:
     def getcode(self): return 200
     def __enter__(self): return self
     def __exit__(self, *args): pass
-    def geturl(self): return 'https://api.deepinfra.com/v1/openai/chat/completions'
+    def geturl(self): return 'https://openrouter.ai/api/v1/chat/completions'
     def read(self, limit):
-        return json.dumps({'object':'chat.completion','model':'openai/gpt-oss-120b', 'choices':[{'index':0,
+        return json.dumps({'object':'chat.completion','model':'deepseek/deepseek-v4.1-flash', 'choices':[{'index':0,
             'message':{'role':'assistant','content':'Synthetic generated text.'}, 'finish_reason':'stop'}],
-            'usage':{'prompt_tokens':8,'completion_tokens':2,'total_tokens':10,'estimated_cost':0.000001}}).encode()
+            'usage':{'prompt_tokens':8,'completion_tokens':2,'total_tokens':10,'cost':0.000001,'is_byok':False}}).encode()
 class Transport:
     def open(self, request, timeout):
-        assert request.full_url == 'https://api.deepinfra.com/v1/openai/chat/completions'
+        assert request.full_url == 'https://openrouter.ai/api/v1/chat/completions'
         return Response()
 with patch('urllib.request.build_opener', return_value=Transport()):
     from f1_pipeline.cli import main
     raise SystemExit(main(sys.argv[1:]))
 '''
             env = dict(os.environ, PYTHONPATH=str(PROJECT), PYTHONDONTWRITEBYTECODE='1',
-                       DEEPINFRA_API_KEY='synthetic-test-key')
+                       OPENROUTER_API_KEY='synthetic-test-key')
             env.pop('F1_WORKSPACE', None)
             result = subprocess.run([sys.executable, '-B', '-c', script, '--workspace', str(root),
-                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.01',
+                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5',
                 '--comparison-id', 'pilot', '--work-id', 'hosted', '--format', 'vertical',
                 '--prompt-version', 'synthetic-v1', '--rubric-version', 'human-review-v1',
                 '--evidence', 'config/event.json'], cwd=PROJECT, env=env, text=True, capture_output=True)
@@ -182,19 +182,22 @@ with patch('urllib.request.build_opener', return_value=Transport()):
             self.assertEqual(data['provider_result']['status'], 'succeeded')
             work = data['model_work']['record']
             attempt = work['attempts'][0]
-            self.assertEqual(attempt['model']['model'], 'openai/gpt-oss-120b')
+            self.assertEqual(attempt['model']['model'], 'deepseek/deepseek-v4.1-flash')
             self.assertEqual(attempt['usage']['input_tokens'], 8)
-            self.assertIsNone(attempt['usage']['cost_usd'])
-            self.assertEqual(attempt['usage']['estimated_cost_usd'], 0.000001)
+            self.assertEqual(attempt['model']['provider'], 'openrouter')
+            self.assertEqual(attempt['usage']['cost_usd'], 0.000001)
+            self.assertEqual(attempt['usage']['cost_source'], 'provider_receipt')
+            self.assertEqual(attempt['usage']['estimated_cost_usd'], 0.0000048)
+            self.assertEqual(attempt['model']['settings']['provider']['only'], ['deepseek'])
             self.assertEqual(attempt['eligibility']['status'], 'not_reviewed')
             report = self.invoke(root, 'model-evaluate', '--comparison-id', 'pilot')
             self.assertEqual(report.returncode, 0, report.stderr)
             self.assertEqual(json.loads(report.stdout)['quality']['human_approved_outputs'], 0)
             # The same public flow must retain a failed request with valid usage
             # when the synthetic provider omits a usable model identity.
-            bad_script = script.replace("'model':'openai/gpt-oss-120b'", "'model':''")
+            bad_script = script.replace("'model':'deepseek/deepseek-v4.1-flash'", "'model':''")
             failed = subprocess.run([sys.executable, '-B', '-c', bad_script, '--workspace', str(root),
-                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.01',
+                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5',
                 '--comparison-id', 'pilot', '--work-id', 'invalid-identity', '--format', 'vertical',
                 '--prompt-version', 'synthetic-v1', '--rubric-version', 'human-review-v1',
                 '--evidence', 'config/event.json'], cwd=PROJECT, env=env, text=True, capture_output=True)
@@ -207,7 +210,8 @@ with patch('urllib.request.build_opener', return_value=Transport()):
             report = self.invoke(root, 'model-evaluate', '--comparison-id', 'pilot')
             self.assertEqual(report.returncode, 0, report.stderr)
             self.assertEqual(json.loads(report.stdout)['attempt_count'], 2)
-            self.assertIsNone(json.loads(report.stdout)['measurements']['actual_total_cost_usd'])
+            self.assertEqual(json.loads(report.stdout)['measurements']['actual_total_cost_usd'],0.000002)
+            self.assertIsNone(json.loads(report.stdout)['measurements']['cost_per_accepted_output_usd'])
 
     def test_local_report_shows_current_human_review_separately(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -240,7 +244,7 @@ with patch('urllib.request.build_opener', return_value=Transport()):
             root = Path(tmp)
             self.workspace(root)
             request = root / 'hosted-request.json'
-            request.write_text(json.dumps({'model': 'openai/gpt-oss-120b',
+            request.write_text(json.dumps({'model': 'deepseek/deepseek-v4.1-flash',
                 'messages': [{'role': 'user', 'content': 'Synthetic request only.'}], 'max_tokens': 64}))
             script = '''
 import sys
@@ -252,10 +256,10 @@ with patch('shutil.disk_usage', return_value=SimpleNamespace(free=1)), \\
     raise SystemExit(main(sys.argv[1:]))
 '''
             env = dict(os.environ, PYTHONPATH=str(PROJECT), PYTHONDONTWRITEBYTECODE='1',
-                       DEEPINFRA_API_KEY='synthetic-test-key')
+                       OPENROUTER_API_KEY='synthetic-test-key')
             env.pop('F1_WORKSPACE', None)
             result = subprocess.run([sys.executable, '-B', '-c', script, '--workspace', str(root),
-                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.01',
+                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5',
                 '--comparison-id', 'pilot', '--work-id', 'reserve', '--format', 'vertical',
                 '--prompt-version', 'synthetic-v1', '--rubric-version', 'human-review-v1',
                 '--evidence', 'config/event.json'], cwd=PROJECT, env=env, text=True, capture_output=True)

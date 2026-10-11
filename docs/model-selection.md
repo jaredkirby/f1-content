@@ -236,44 +236,43 @@ bounded attempt budget; avoid indefinite generator/judge loops.
 
 ## Hosted open-model candidates and price
 
-Start with **DeepInfra as the proposed inference provider**: its directly listed
-models cover text, vision, ASR and TTS through hosted APIs. This is a shortlist
-recommendation, not proof of account access, provider reliability or F1 quality.
-[Provider API documentation](https://docs.deepinfra.com/).
+The user selected **OpenRouter** and **`deepseek/deepseek-v4.1-flash`** on
+2026-10-10. This replaces the earlier DeepInfra text shortlist as the active
+candidate route. It does not promote the model to human-approved production
+quality or change subscription-first selection. [Model and API guide](https://openrouter.ai/deepseek/deepseek-v4.1-flash/llms.txt).
 
-The following standard-tier USD rates were checked on 2026-10-10. Cached-input,
-priority/flex and reasoning-token accounting can change the actual charge. Refresh
-rates and verify the exact endpoint/configuration before a paid run.
+The first comparison pins OpenRouter's `deepseek` provider slug, disables
+fallbacks and requires supported parameters. OpenRouter lists multiple serving
+providers and quantizations; a cheaper provider is a separate quality candidate.
+Pinning the author's endpoint gives the first trial a consistent route without
+claiming an unreported precision or runtime fingerprint. [Routing contract](https://openrouter.ai/docs/guides/routing/provider-selection).
 
-| Hosted candidate | Intended first test | Input / output per 1M tokens | Listed serving precision | Price source |
-|---|---|---:|---|---|
-| DeepSeek-V4-Pro-0813 | Strong text research/script candidate; prioritize quality before cheaper routing | $1.30 / $2.60 | FP8 | [DeepInfra](https://deepinfra.com/deepseek-ai/DeepSeek-V4-Pro-0813) |
-| Qwen3.5-397B-A17B | Grounded scripts plus vision/caption/frame review | $0.45 / $3.00 | FP8 | [DeepInfra](https://deepinfra.com/Qwen/Qwen3.5-397B-A17B) |
-| DeepSeek-V3.2 | Lower-price grounded text comparison | $0.26 / $0.38 | FP4 | [DeepInfra](https://deepinfra.com/deepseek-ai/DeepSeek-V3.2) |
-| gpt-oss-120b | Very low-price bounded extraction/claim triage candidate | $0.037 / $0.17 | BF16 listed | [DeepInfra](https://deepinfra.com/openai/gpt-oss-120b) |
+Public metadata checked on 2026-10-10 lists a 1,048,576-token context and low/high/max
+reasoning efforts. The adapter explicitly starts at high effort, remains text-only,
+and caps output at 16,384 tokens. Image capability advertised by the model is not
+an implemented upload or viewing workflow. [Model catalog](https://openrouter.ai/api/v1/models).
 
-Illustration, **not a measured edit cost**: 20,000 billed input tokens and 2,000
-billed output tokens with no cache cost about $0.0312, $0.0150, $0.00596 and
-$0.00108 respectively, in table order. Additional reasoning tokens, failed
-attempts, other stages, media processing and revisions increase that amount.
-The more expensive strong candidate is preferable if it produces the user's
-accepted result with less rework. No candidate has yet been measured on this F1
-workflow, and provider/upstream benchmark claims do not establish preference parity.
+| Candidate route | Peak input / output / cached input per 1M tokens | Quality status |
+|---|---:|---|
+| OpenRouter → DeepSeek, `deepseek/deepseek-v4.1-flash` | $0.30 / $1.20 / $0.006 | Selected candidate; no human-reviewed F1 quality result |
 
-For a concrete provider alternative, Together lists the same Qwen model at
-$0.60/$3.60 per million input/output tokens and FP4 serving. Its listed rate is
-higher than DeepInfra's, but different serving configurations and reliability
-must be evaluated as separate routes. [Together model page](https://www.together.ai/models/qwen3-5-397b-a17b).
-Start with one provider; add another only when quality, availability or measured
-cost per accepted output justifies it. Avoid an opaque automatic multi-provider
-fallback that prevents attribution.
+DeepSeek's endpoint advertises discounted time windows as well as these peak
+rates. Preflight uses the peak uncached-input price, full context and capped output;
+provider price filters enforce those rate limits. For illustration, 20,000 input
+and 2,000 output tokens at peak uncached rates cost $0.0084. This is not a measured
+edit cost. Account fees, extra stages, rejected work and human revisions remain
+separate. [Endpoint prices](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-20260910/endpoints).
 
-Hosted speech candidates are [Kokoro-82M](https://deepinfra.com/hexgrad/Kokoro-82M)
-for narration (listed $0.99 per million characters) and
-[Whisper large-v3](https://deepinfra.com/openai/whisper-large-v3) for missing captions.
-The ASR rate/unit is not established in this review and must be verified before
-a paid call. A voice only becomes the default after the user's listening feedback.
-Keep speech and visual evaluation distinct from text-model evaluation.
+Compare the exact delivered output against the subscription reference and the
+user's phone feedback before optimizing serving price. Record observed provider,
+model, generation ID, effective settings, actual usage and request charges when
+exposed. Missing identity/configuration details remain unknown. A BYOK credit
+charge does not establish the full upstream bill. Historical DeepInfra work keeps
+its original attribution; it is not relabeled as OpenRouter work.
+
+Speech and transcription remain separate future adapters. Keep the current voice
+until listening feedback authorizes a change. No speech provider or new media
+upload is introduced by the text-infrastructure migration.
 
 ## Path to open models
 
@@ -283,17 +282,16 @@ tools/contracts. Switching the LLM does not provide browsing or playback tools b
 itself. The integration must preserve those capabilities and provenance.
 
 Use “open-weight” precisely: accessible weights and a permissive license do not
-establish that all training data/processes are open. These hosted candidates have
-open weights; do not claim complete training-source openness. Pin the provider,
+establish that all training data/processes are open. The selected DeepSeek candidate has
+MIT-licensed open weights; do not claim complete training-source openness. Pin the provider,
 exact model ID, endpoint, settings and observed serving configuration. Record an
 upstream revision when exposed; unknown hosted build/weight hashes stay unknown.
-The candidates are a bounded shortlist, not an exhaustive/latest-model ranking.
+The selected route is a bounded candidate, not an exhaustive model ranking.
 
 | Capability | Candidate and verified upstream basis | What must be tested |
 |---|---|---|
-| Research and script text | [DeepSeek-V4-Pro-0813 upstream](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro-0813) and [DeepSeek-V3.2 upstream](https://huggingface.co/deepseek-ai/DeepSeek-V3.2) list MIT | Script/source grounding, narration clarity, model settings and exact provider-specific behavior |
-| Text/vision | [Qwen3.5-397B-A17B upstream](https://huggingface.co/Qwen/Qwen3.5-397B-A17B) lists Apache 2.0 | Observed-frame accuracy, caption grounding, schema success and vertical-edit preference; frame observation cannot establish an unviewed interval |
-| Bounded extraction/claim triage | [gpt-oss-120b](https://developers.openai.com/api/docs/models/gpt-oss-120b), hosted at the proposed provider | Citation retention, identity errors, abstention and schema success; no inferred final acceptance from low price |
+| Research and script text | [DeepSeek-V4.1-Flash upstream](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash) lists MIT; selected OpenRouter text route | Source grounding, narration clarity, exact settings/provider and human-reviewed vertical output |
+| Vision when needed | The same [upstream model card](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash) advertises image input; no vision adapter implemented | Bounded authorized frames, observation accuracy, usage and interval provenance; no full-playback claim from frames |
 | Transcription when referenced captions are absent | [Whisper](https://github.com/openai/whisper): code and weights under MIT | F1 names, noisy clips, timestamp accuracy and hallucinations; verify against the relevant audio |
 | Narration | [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M): Apache-licensed open weights | User-approved voice/prosody, driver/circuit pronunciation, timing, audio QA and actual listening |
 
@@ -328,7 +326,7 @@ unless it demonstrably solves a gap that subscription/open candidates do not.
 ## Implemented workflow and next quality pilot
 
 Feedback/provenance capture, provider-neutral receipts, offline quality/efficiency
-reports and subscription-first route advice are implemented. The DeepInfra text
+reports and subscription-first route advice are implemented. The OpenRouter DeepSeek text
 adapter defaults to no-network preflight and requires explicit execution/budget.
 Subscription work stays in supported Codex surfaces; provider API billing is separate.
 Use the [command guide](model-workflows.md) and the

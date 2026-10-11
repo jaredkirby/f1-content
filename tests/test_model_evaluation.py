@@ -140,6 +140,29 @@ class ModelWorkflows(unittest.TestCase):
             self.assertEqual(report["attempt_count"], 0)
             self.assertIsNone(report["measurements"]["actual_total_cost_usd"])
 
+    def test_orphan_openrouter_charge_and_byok_scope_remain_visible_without_a_work_receipt(self):
+        from f1_pipeline.model_evaluation import evaluation_report
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);identity=event_workspace(root);record=work_record(root,identity)
+            assets='runs/model-evaluations/story-pilot/pending-work.assets/'
+            write(root,assets+'intent.json',{'event_identity':identity,'task':'story_script',
+                'format':'vertical','inputs':record['inputs'],'evidence':record['evidence'],
+                'preflight':{},'status':'execution_requested'})
+            write(root,assets+'provider-receipt.json',{'schema_version':'f1.hosted-inference.v1',
+                'provider':'openrouter','status':'succeeded','observed_model':'deepseek/deepseek-v4.1-flash',
+                'observed_serving_provider':'DeepSeek','observed_generation_id':'gen-synthetic',
+                'inference_attempted':True,'actual_model_inference':True,'attempts':1,
+                'usage':{'input_tokens':120,'output_tokens':30},
+                'cost':{'provider_reported_cost_usd':0.002,'actual_billing_usd':None,'is_byok':True}})
+            report=evaluation_report('story-pilot',root=root)
+            raw=report['incomplete_execution_evidence'][0]['provider_receipt_observation']
+            self.assertEqual(raw['provider'],'openrouter')
+            self.assertEqual(raw['observed_serving_provider'],'DeepSeek')
+            self.assertEqual(raw['cost']['provider_reported_cost_usd'],0.002)
+            self.assertTrue(raw['cost']['is_byok'])
+            self.assertEqual(report['attempt_count'],0)
+            self.assertIsNone(report['measurements']['actual_total_cost_usd'])
+
     def test_orphan_execution_intent_makes_cost_unknown_without_fabricating_an_attempt(self):
         from f1_pipeline.model_evaluation import evaluation_report
         with tempfile.TemporaryDirectory() as tmp:
