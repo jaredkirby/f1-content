@@ -81,3 +81,36 @@ General taste, voice changes, important user-facing preferences and model
 promotions stay in the human loop. Ask when scope is unclear; a comment on one
 version does not silently become a project-wide preference. Do not schedule
 unattended reads or create recurring jobs unless requested.
+
+## Supply an OpenRouter key from a phone
+
+The private Site's `/connect` page accepts a key for the already authorized
+candidate run. The password field stays in memory, clears after acknowledgement,
+and never uses browser storage or URLs. D1 stores only an AES-GCM encrypted,
+user/operation-bound handoff with a 30-minute retrieval window. Collected or
+expired ciphertext is cleared on access; no cleanup background job is created.
+Feedback and credentials use separate tables.
+
+Configure `MOBILE_CREDENTIAL_ENCRYPTION_KEY` and
+`MOBILE_CREDENTIAL_OPERATOR_TOKEN` as native Sites runtime secrets, then deploy
+the saved source to apply the environment revision. Do not put their values in
+source, local files, summaries or browser bundles. The owner-private platform
+boundary and separate operation token both protect pickup. Store the operator
+token in session memory and pass it through hidden stdin to
+`scripts/run_mobile_candidate.mjs`, along with the native Site service credential,
+exact operation/request hash, event workspace and approved budget. The helper
+verifies current authorization/output bindings and refuses existing run evidence
+before consuming a key. It sets the inference child's environment directly and
+redacts the key from output; it never writes a credential file.
+
+If an operator session loses its token, renew that operation token through native
+runtime settings for the actual authorized pickup, preserving the encryption key
+and deploying the existing private version. Do not rotate merely to inspect state.
+The user may submit a replacement handoff. Credential submission is not proof that
+inference happened and never supplies editorial approval.
+
+Local checks use synthetic secrets and keys only: Node's credential-box tests,
+`scripts/verify-credential.mjs` against loopback and browser input/acknowledgement
+checks. The shared pickup helper's verify-local mode accepts only its explicit
+synthetic key fixture and cannot execute against a hosted origin. Inspect SQL and
+Drizzle history; never copy local D1 test data into production.

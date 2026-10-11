@@ -6,6 +6,7 @@ and an explicit execute flag; subscription-authored work is imported offline.
 from __future__ import annotations
 
 import json
+import math
 import re
 from pathlib import Path
 
@@ -29,6 +30,7 @@ def options(parser):
     group.add_argument('--evidence', action='append', default=[], help='Event-relative evidence file; repeat as needed')
     group.add_argument('--execute', action='store_true', help='Explicitly send one paid hosted request (model-infer only)')
     group.add_argument('--budget-usd', type=float, help='Authorized hosted request budget under the documented rates')
+    group.add_argument('--timeout-seconds', type=float, default=20, help='Bounded hosted transport timeout, at most 60 seconds')
 
 
 def load_request(path):
@@ -57,6 +59,8 @@ def _binding(relative):
 def _hosted_work(args):
     from .core import ROOT, config, ensure_space, safe_relative, write_json
     from .hosted_inference import evaluate, preflight, MAX_REQUEST_BYTES, MAX_RESPONSE_BYTES
+    if not math.isfinite(args.timeout_seconds) or not 0.001 <= args.timeout_seconds <= 60:
+        raise ValueError('timeout-seconds must be finite, positive and at most 60')
     payload = load_request(args.request)
     preview = preflight(payload, budget_usd=args.budget_usd)
     if not args.execute:
@@ -98,8 +102,9 @@ def _hosted_work(args):
     intent_path = assets / 'intent.json'
     write_json(intent_path, {'event_identity': event_identity, 'task': args.task,
                             'format': args.format, 'inputs': inputs, 'evidence': evidence,
-                            'preflight': preview, 'status': 'execution_requested'})
-    result = evaluate(payload, execute=True, budget_usd=args.budget_usd)
+                            'preflight': preview, 'transport_timeout_seconds': args.timeout_seconds,
+                            'status': 'execution_requested'})
+    result = evaluate(payload, execute=True, budget_usd=args.budget_usd, timeout=args.timeout_seconds)
     provider_path = assets / 'provider-receipt.json'
     write_json(provider_path, result)
     outputs = []
@@ -130,6 +135,7 @@ def _hosted_work(args):
                 'identity_source': 'observed' if result.get('observed_model') else 'unknown',
                 'settings': {**result['effective_settings'],
                              'catalog_canonical_slug': result.get('catalog_canonical_slug'),
+                             'transport_timeout_seconds': args.timeout_seconds,
                              'observed_serving_provider': result.get('observed_serving_provider')},
                 'session_reference': result.get('observed_generation_id'), 'revision': None, 'quantization': None,
             },

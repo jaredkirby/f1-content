@@ -21,3 +21,10 @@ hosted origins and submits only clearly marked local synthetic records.
 Publish the exact pushed source through the Sites skill to the existing private
 audience. Do not upload local test data. Hosted D1 is separate. Review and preserve
 generated SQL/Drizzle metadata in that Site's independent source repository.
+
+The `/connect` page is a temporary mobile credential handoff, independent of
+feedback. Keys are AES-GCM encrypted with native runtime secrets, scoped to the
+current authorized operation and collected once. Never log plaintext or put
+secrets in browser storage/source. Test with `node --experimental-strip-types
+--test scripts/test-credential-box.mjs`, then local HTTP/browser checks with
+synthetic keys. Configure production values only through native Sites settings.

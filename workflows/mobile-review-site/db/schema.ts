@@ -1,4 +1,4 @@
-import { sqliteTable, text, real, uniqueIndex, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, real, integer, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 
 export const reviewFeedback = sqliteTable("review_feedback", {
   id: text("id").primaryKey(),
@@ -17,4 +17,20 @@ export const reviewFeedback = sqliteTable("review_feedback", {
 }, (table) => [
   uniqueIndex("feedback_request").on(table.userId, table.requestId),
   index("feedback_review").on(table.userId, table.manifestSha256, table.createdAt),
+]);
+
+export const mobileCredentials = sqliteTable("mobile_credentials", {
+  id: text("id").primaryKey(),
+  operationId: text("operation_id").notNull(),
+  userId: text("user_id").notNull(),
+  requestId: text("request_id").notNull(),
+  ciphertext: text("ciphertext"),
+  iv: text("iv"),
+  status: text("status", { enum: ["pending", "consumed", "expired"] }).notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  createdAt: text("created_at").notNull(),
+  consumedAt: text("consumed_at"),
+}, (table) => [
+  uniqueIndex("mobile_credential_request").on(table.userId, table.requestId),
+  index("mobile_credential_operation").on(table.operationId, table.status, table.createdAt),
 ]);

@@ -164,6 +164,7 @@ class Response:
 class Transport:
     def open(self, request, timeout):
         assert request.full_url == 'https://openrouter.ai/api/v1/chat/completions'
+        assert timeout == 60
         return Response()
 with patch('urllib.request.build_opener', return_value=Transport()):
     from f1_pipeline.cli import main
@@ -173,7 +174,7 @@ with patch('urllib.request.build_opener', return_value=Transport()):
                        OPENROUTER_API_KEY='synthetic-test-key')
             env.pop('F1_WORKSPACE', None)
             result = subprocess.run([sys.executable, '-B', '-c', script, '--workspace', str(root),
-                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5',
+                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5', '--timeout-seconds', '60',
                 '--comparison-id', 'pilot', '--work-id', 'hosted', '--format', 'vertical',
                 '--prompt-version', 'synthetic-v1', '--rubric-version', 'human-review-v1',
                 '--evidence', 'config/event.json'], cwd=PROJECT, env=env, text=True, capture_output=True)
@@ -197,7 +198,7 @@ with patch('urllib.request.build_opener', return_value=Transport()):
             # when the synthetic provider omits a usable model identity.
             bad_script = script.replace("'model':'deepseek/deepseek-v4.1-flash'", "'model':''")
             failed = subprocess.run([sys.executable, '-B', '-c', bad_script, '--workspace', str(root),
-                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5',
+                'model-infer', '--request', str(request), '--execute', '--budget-usd', '0.5', '--timeout-seconds', '60',
                 '--comparison-id', 'pilot', '--work-id', 'invalid-identity', '--format', 'vertical',
                 '--prompt-version', 'synthetic-v1', '--rubric-version', 'human-review-v1',
                 '--evidence', 'config/event.json'], cwd=PROJECT, env=env, text=True, capture_output=True)

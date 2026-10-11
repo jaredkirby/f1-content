@@ -54,6 +54,33 @@ class ReviewDestinationTests(unittest.TestCase):
             self.assertTrue((site/'public'/pilot['videoUrl'].lstrip('/')).is_file())
             self.assertEqual(prepared['status'],'prepared_awaiting_web_checks')
             self.assertNotIn(str(root),(site/'app/data/pilot.json').read_text())
+            self.assertFalse(json.loads((site/'app/data/credential-operation.json').read_text())['enabled'])
+
+    def test_mobile_key_form_requires_unchanged_bounded_execution_authorization(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/'event';site=Path(tmp)/'site';root.mkdir();site.mkdir()
+            video=self.fixture(root)
+            pilot_dir=root/'runs/pilot';pilot_dir.mkdir(parents=True)
+            request=pilot_dir/'request.json'
+            request.write_text((PROJECT/'examples/synthetic/hosted-request.json').read_text())
+            binding={'path':str(request.relative_to(root)),'sha256':hashlib.sha256(request.read_bytes()).hexdigest()}
+            auth={'source':{'kind':'human'},'provider':'openrouter','model':'deepseek/deepseek-v4.1-flash',
+                  'max_calls':1,'budget_usd':0.3244032,'request_binding':binding}
+            authorization=pilot_dir/'authorization.json';authorization.write_text(json.dumps(auth))
+            authorization_binding={'path':str(authorization.relative_to(root)),
+                'sha256':hashlib.sha256(authorization.read_bytes()).hexdigest()}
+            state={'manifest_sha256':hashlib.sha256((root/'outputs/manifest.json').read_bytes()).hexdigest(),
+                   'video':{'sha256':video['sha256']},
+                   'active_hosted_candidate':{'request':binding,'spending_authorization':authorization_binding}}
+            (pilot_dir/'pilot-state.json').write_text(json.dumps(state))
+            result=self.invoke(root,site);self.assertEqual(result.returncode,0,result.stderr)
+            operation=json.loads((site/'app/data/credential-operation.json').read_text())
+            self.assertTrue(operation['enabled']);self.assertEqual(operation['budgetUsd'],0.3244032)
+            previous=(site/'app/data/credential-operation.json').read_bytes()
+            authorization.write_text('changed authorization')
+            result=self.invoke(root,site)
+            self.assertNotEqual(result.returncode,0)
+            self.assertEqual((site/'app/data/credential-operation.json').read_bytes(),previous)
 
     def test_changed_or_unvalidated_video_cannot_be_prepared(self):
         with tempfile.TemporaryDirectory() as tmp:

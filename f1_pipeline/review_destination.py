@@ -68,6 +68,30 @@ def prepare_review_site(site_directory):
             if digest(safe_relative(receipt['path'])) != receipt['sha256']:
                 raise ValueError("Pilot model receipt changed")
             receipts.append({'path': receipt['path'], 'sha256': receipt['sha256']})
+    operation = {'id': 'not-configured', 'enabled': False,
+                 'model': 'deepseek/deepseek-v4.1-flash', 'budgetUsd': None,
+                 'requestSha256': None, 'requestFileSha256': None}
+    active = state.get('active_hosted_candidate', {})
+    authorization = active.get('spending_authorization')
+    if authorization:
+        authorization_path = safe_relative(authorization['path'])
+        if digest(authorization_path) != authorization['sha256']:
+            raise ValueError('Changed candidate execution authorization')
+        auth = read_json(authorization_path)
+        binding = active['request']
+        request_path = safe_relative(binding['path'])
+        if digest(request_path) != binding['sha256'] or auth.get('request_binding') != binding:
+            raise ValueError('Changed authorized candidate request')
+        from .hosted_inference import preflight
+        preview = preflight(read_json(request_path), budget_usd=auth.get('budget_usd'))
+        if (auth.get('source', {}).get('kind') != 'human' or type(auth.get('max_calls')) is not int or auth['max_calls'] != 1
+                or auth.get('provider') != preview['provider'] or auth.get('model') != preview['requested_model']
+                or preview['cost']['budget_usd'] is None
+                or preview['cost']['budget_usd'] < preview['cost']['preflight_ceiling_usd']):
+            raise ValueError('A bounded human-authorized candidate run is required')
+        operation = {'id': authorization['sha256'][:24], 'enabled': True,
+                     'model': preview['requested_model'], 'budgetUsd': auth['budget_usd'],
+                     'requestSha256': preview['request_sha256'], 'requestFileSha256': binding['sha256']}
     # Validate every source before changing the destination. Preserve starter integration.
     templates = CODE_ROOT/'workflows/mobile-review-site'
     for target in (site/'app/data/pilot.json', site/'.openai/hosting.json'):
@@ -98,6 +122,7 @@ def prepare_review_site(site_directory):
              'videoUrl': assets['path'], 'posterUrl': assets['thumbnail'], 'scriptUrl': assets['script'],
              'captionsUrl': assets['captions']}
     write_json(site/'app/data/pilot.json', pilot)
+    write_json(site/'app/data/credential-operation.json', operation)
     hosting_path = site/'.openai/hosting.json'
     hosting = read_json(hosting_path, {})
     hosting.update({'d1': 'DB', 'r2': None})

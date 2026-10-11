@@ -193,6 +193,12 @@ parameters required. Redirects, model fallback and client retries are refused.
 The output-token, byte, time and preflight-budget limits remain bounded;
 local checks cannot prevent an unexpected provider billing error or price change.
 
+For mobile key entry, use the private [temporary handoff](mobile-review.md#supply-an-openrouter-key-from-a-phone).
+It hands a key to the local process without exposing it in chat. An authorized
+longer request may use `--timeout-seconds 60`; the default is 20 and values outside
+0.001–60 seconds fail before execution. Intent and model-work settings record the
+transport timeout; it does not authorize retries or an additional charge.
+
 Before the request, the CLI checks storage reserve and saves input/evidence hashes
 and execution intent. It saves provider success/failure evidence, validated usage,
 raw request/response hashes and any generated text in a unique `.assets` directory,
