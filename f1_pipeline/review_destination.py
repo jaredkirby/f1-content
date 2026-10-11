@@ -23,7 +23,7 @@ TEMPLATE_FILES = (
     'app/api/operator/credential/route.ts', 'app/connect/key-entry.tsx',
     'app/connect/page.tsx', 'app/globals.css', 'app/layout.tsx', 'app/page.tsx',
     'app/review.tsx', 'cloudflare-env.d.ts', 'db/schema.ts', 'lib/bounded-body.ts',
-    'lib/credential-box.ts', 'public/favicon.svg', 'scripts/test-credential-box.mjs',
+    'lib/credential-box.ts', 'lib/credential-operation.mjs', 'public/favicon.svg', 'scripts/test-credential-box.mjs',
     'scripts/verify-credential.mjs', 'scripts/verify-feedback.mjs',
 )
 
@@ -89,7 +89,7 @@ def prepare_review_site(site_directory):
             if digest(safe_relative(receipt['path'])) != receipt['sha256']:
                 raise ValueError("Pilot model receipt changed")
             receipts.append({'path': receipt['path'], 'sha256': receipt['sha256']})
-    operation = {'id': 'not-configured', 'enabled': False,
+    operation = {'id': 'not-configured', 'enabled': False, 'persistKeychain': False,
                  'model': 'deepseek/deepseek-v4.1-flash', 'budgetUsd': None,
                  'requestSha256': None, 'requestFileSha256': None}
     active = state.get('active_hosted_candidate', {})
@@ -115,7 +115,7 @@ def prepare_review_site(site_directory):
                 or preview['cost']['budget_usd'] is None
                 or preview['cost']['budget_usd'] < preview['cost']['preflight_ceiling_usd']):
             raise ValueError('A bounded human-authorized candidate run is required')
-        operation = {'id': authorization['sha256'][:24], 'enabled': True,
+        operation = {'id': authorization['sha256'][:24] + ':transient-v1', 'enabled': True, 'persistKeychain': False,
                      'model': preview['requested_model'], 'budgetUsd': auth['budget_usd'],
                      'requestSha256': preview['request_sha256'], 'requestFileSha256': binding['sha256']}
     # Validate every source before changing the destination. Preserve starter integration.

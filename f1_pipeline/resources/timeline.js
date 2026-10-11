@@ -5,7 +5,12 @@ function setTheme(theme) {
   themeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.setTheme === theme)));
   try { localStorage.setItem('f1-timeline-theme', theme); } catch (_) {}
 }
-setTheme(document.documentElement.dataset.theme || 'auto');
+let initialTheme = document.documentElement.dataset.theme || 'auto';
+try {
+  const savedTheme = localStorage.getItem('f1-timeline-theme');
+  if (['light', 'dark', 'auto'].includes(savedTheme)) initialTheme = savedTheme;
+} catch (_) {}
+setTheme(initialTheme);
 themeButtons.forEach(button => button.addEventListener('click', () => setTheme(button.dataset.setTheme)));
 const events = [...document.querySelectorAll('.event')];
 const filters = [...document.querySelectorAll('[data-filter]')];

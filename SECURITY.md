@@ -24,3 +24,7 @@ ephemeral hosted runners and read-only repository permissions.
 
 `scripts/repo_guard.py` detects common accidental publication patterns in Git's
 index. It is not a complete secret scanner, media-rights audit or sandbox.
+The README and committed workflow guide have a narrow, reviewed exception for
+their exact private Site homepage links. It does not allow credentials, signed
+URLs, private URL paths/queries or those addresses in other files; the Sites
+retain their owner-only access controls.

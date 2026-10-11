@@ -2,6 +2,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 export PYTHONDONTWRITEBYTECODE=1
+export F1_DISABLE_KEYCHAIN=1
 if [ -n "${F1_PYTHON:-}" ]; then
   F1_CHECK_PYTHON="$F1_PYTHON"
 elif [ -x .venv/bin/python ]; then

@@ -1,0 +1,8 @@
+{
+  "name": "f1-mobile-contract-tests",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.15.0"},
+  "scripts": {"test": "node --experimental-strip-types --test test-routes.mjs ../../f1_pipeline/resources/mobile-review-site/scripts/test-credential-box.mjs"},
+  "devDependencies": {"drizzle-orm": "0.45.2", "zod": "3.25.76"}
+}

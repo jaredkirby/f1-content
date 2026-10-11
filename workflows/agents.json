@@ -22,8 +22,17 @@
     "run"
   ],
   "explicit_model_work_commands": [
-    "feedback-record", "feedback-status", "preference-record", "preference-status",
-    "model-import", "model-route", "model-evaluate", "model-infer"
+    "feedback-record",
+    "feedback-status",
+    "preference-record",
+    "preference-status",
+    "model-import",
+    "model-route",
+    "model-evaluate",
+    "model-infer",
+    "jev-infer",
+    "model-run",
+    "model-review"
   ],
   "run_invokes_hosted_inference": false,
   "run_artifacts": [
@@ -182,7 +191,7 @@
     {
       "id": "typed_judgments",
       "role": "Optional Jev classification and scoring evaluator",
-      "executor": "optional official TypeSafe API",
+      "executor": "explicit OpenRouter native System One call",
       "depends_on": [
         "catalog",
         "event_research"
@@ -195,12 +204,12 @@
       ],
       "outputs": [
         "data/processed/jev_requests/index.json",
-        "data/processed/jev_requests/*.json",
-        "caller-selected hashed provider receipts only if inference actually executes"
+        "data/processed/jev_requests/versions/*.json",
+        "runs/model-evaluations/<comparison>/<job>.json"
       ],
-      "adapter": "f1_pipeline/jev_adapter.py",
-      "model": "jev-1.13.0",
-      "credential_environment_variable": "TYPESAFE_API_KEY",
+      "adapter": "f1_pipeline/jev_inference.py",
+      "model": "typesafe/jev-1.13",
+      "credential_environment_variable": "OPENROUTER_API_KEY",
       "task": "Evaluate atomic session-match, category, evidence-support, narrative-impact and explanation-value questions. Preserve raw provider values and backend provenance. Keep math, rights, execution and event timing in code. Preparation validates requests only and records actual_model_inference:false.",
       "gates": [
         "credential_present",
@@ -382,5 +391,6 @@
   "timeline_presentation": {
     "scope": "Curated Singapore Sprint and main Qualifying presentations; not a generic arbitrary-event template.",
     "publication_gate": "Registration, local build, browser QA and deployment are distinct states."
-  }
+  },
+  "model_work_guide": "docs/openrouter-workflow.md"
 }

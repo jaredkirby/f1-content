@@ -2,7 +2,8 @@
 
 These commands implement the first steps of the [model-selection policy](model-selection.md):
 explicit feedback, provenance, route advice, offline evaluation and a hosted text
-adapter. They preserve the distinction between local release and human acceptance.
+adapter. The [OpenRouter work-plan guide](openrouter-workflow.md) adds native Jev
+judgments and dependent story drafting with explicit budgets. They preserve the distinction between local release and human acceptance.
 Run every command against one explicit event workspace. Private records stay there.
 
 ## Start with the subscription reference
@@ -185,8 +186,8 @@ covers the displayed ceiling:
   --rubric-version ACTUAL_VERSION --evidence research/event/event_bundle.json
 ```
 
-`OPENROUTER_API_KEY` is read only for execution. Use an existing authorized secret
-environment; credentials are not CLI values or receipt fields. One request is sent
+An explicit `OPENROUTER_API_KEY` takes precedence; macOS execution can otherwise
+read the dedicated [login-Keychain item](credentials.md). Previews read neither; credentials are not CLI values or receipt fields. One request is sent
 to OpenRouter’s fixed HTTPS Chat Completions endpoint. The initial route is pinned
 to the `deepseek` serving provider, with provider fallbacks disabled and supported
 parameters required. Redirects, model fallback and client retries are refused.
@@ -195,8 +196,8 @@ local checks cannot prevent an unexpected provider billing error or price change
 
 For mobile key entry, use the private [temporary handoff](mobile-review.md#supply-an-openrouter-key-from-a-phone).
 It hands a key to the local process without exposing it in chat. An authorized
-longer request may use `--timeout-seconds 60`; the default is 20 and values outside
-0.001–60 seconds fail before execution. Intent and model-work settings record the
+longer request may use `--timeout-seconds 300`; the CLI default is 120 and values outside
+0.001–300 seconds fail before execution. Intent and model-work settings record the
 transport timeout; it does not authorize retries or an additional charge.
 
 Before the request, the CLI checks storage reserve and saves input/evidence hashes

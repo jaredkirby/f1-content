@@ -15,7 +15,7 @@ The first Sprint run used Codex research agents for event reporting, media disco
 | Acquisition | Bounded local downloader | Reviewed public media URLs and configured OpenF1 session | `research/media/downloads/`, `data/raw/openf1/`, source receipts; complete files have size/hash/probe evidence |
 | Event research | Codex event research agent | FIA classification/decisions, official reports, timing records | `research/event/event_bundle.json`; each result and important segment links to evidence |
 | Catalog and review | Local `catalog` plus Codex visual review | Source inventory and local files | `data/processed/catalog.json`, proxies, contact sheets; metadata tags remain distinct from visual observations |
-| Typed judgments | Optional direct Jev adapter; deterministic metadata rules initially | Short referenced records, event identity and fixed questions | Label/rank suggestions with actual backend and uncertainty; no fabricated Jev results |
+| Typed judgments | Explicit native Jev through OpenRouter; deterministic metadata rules by default | Short referenced records, event identity and fixed questions | Label/rank suggestions with actual backend and uncertainty; no fabricated Jev results |
 | Story editor | Codex editorial judgment plus local `analyze` | Verified timeline, results, catalog, data manifest | `data/processed/editorial.json`; prioritized ideas, asset matches, explicit unsupported claims and gaps |
 | Assembly | Local `render`, governed by reviewed edit plan | Selected idea, source time ranges, graphics, narration | Versioned videos/sidecars/EDL selected by `outputs/manifest.json`; every source interval stays within its current reviewed association |
 | QA and report | Local `validate` and `report`, plus Codex visual/playback inspection | Source records, edit plan and completed files | `outputs/qa.json`, `outputs/index.html`; technical, editorial and viewing checks reported separately |
@@ -92,7 +92,7 @@ Both workspaces preserve **8 GiB free**. The root Sprint config retains its **75
 
 The data downloader streams to `.part`, enforces its byte limit, checks size, flushes, hashes and renames only a completed response. It permits two retries after the first attempt with a 45-second request timeout. Data collection is sequential and spaces endpoint requests by 2.1 seconds. Endpoint failures are recorded as partial coverage; a successful receipt cannot stand in for an unavailable endpoint. The media script has its own bounded `curl` behavior and is not the same downloader.
 
-Cached source downloads require matching receipts. Proxy/contact reuse requires matching original hash, transform recipe, derivative hash and size; corrupt or outdated derivatives are regenerated and probed/decoded before replacement. Current hash-bound source reviews are checked again when the catalog and later associations are used. Jev retries only explicit 429/529 overload responses, has a bounded delay, and refuses redirects. It does not retry ambiguous transport failures or manufacture a model answer.
+Cached source downloads require matching receipts. Proxy/contact reuse requires matching original hash, transform recipe, derivative hash and size; corrupt or outdated derivatives are regenerated and probed/decoded before replacement. Current hash-bound source reviews are checked again when the catalog and later associations are used. The legacy direct Jev adapter retries only explicit 429/529 overload responses with bounded delay. The OpenRouter work-plan path makes one call per job and never retries. Both refuse redirects. It does not retry ambiguous transport failures or manufacture a model answer.
 
 After interruption, inspect the selected workspace's `runs/events.jsonl`, `runs/stages/`, data manifest and media collection receipt. Preserve the historical Sprint `runs/harness.json` without treating it as proof of later stage execution. Rerun the failed stage and its dependents. Preserve failed-source reasons. An access error, expired URL or missing data is a documented gap; it is not permission to bypass access controls or invent the missing record.
 
@@ -153,3 +153,14 @@ Changing the config alone is insufficient: media discovery/collectors, source re
 Success means traceable files and a usable local edit for the declared scope. It never means every public or social F1 video on the internet has been found. Coverage counts, inaccessible sources, unreviewed footage and unavailable models remain visible in the report.
 
 New releases require current technical, editorial, visual and audio receipts before `finalize`. Controlled historical Sprint compatibility preserves its pre-versioned delivery; it is not an exemption for new workspace outputs. Both Site deployments are private and active; each is backed by its native deployment receipt. See [qualifying-workflow-hardening.md](history/qualifying-workflow-hardening.md) for current gates and tested contracts and completed release evidence.
+
+
+## Explicit model work plans
+
+The [OpenRouter workflow](openrouter-workflow.md) adds `jev-infer`, `model-run`
+and `model-review`. Preparation now keeps one packet per asset/matched timeline
+claim, with independent primary excerpts, source locators and content bindings.
+Native Jev findings can feed dependent DeepSeek story requests. Every attempt
+retains input/output provenance, unknown-or-observed billing and its prompt/rubric
+versions. Failed or stale work stops dependent generation. Advisory review does
+not imply acceptance, ranking promotion or release. `run` remains deterministic.

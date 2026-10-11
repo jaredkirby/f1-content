@@ -78,6 +78,23 @@ class RepositoryTests(unittest.TestCase):
             self.assertIn('provider token', result.stderr)
             self.assertNotIn('a'*40, result.stderr)
 
+    def test_source_guard_allows_only_approved_documentation_homepages(self):
+        for path, addresses in guard.APPROVED_SITE_LINKS.items():
+            for address in addresses:
+                with self.subTest(path=path, address=address):
+                    for suffix in ('', '/'):
+                        blob = f'<a href="{address}{suffix}">Guide</a>'.encode()
+                        self.assertEqual(guard.inspect_blob(path, '100644', blob), [])
+                        self.assertTrue(guard.inspect_blob('docs/other.md', '100644', blob))
+                    for suffix in ('/private-record', '?token=' + 'b'*40,
+                                   '.attacker.invalid', ':443/private', '#private'):
+                        blob = f'<a href="{address}{suffix}">Guide</a>'.encode()
+                        issues = guard.inspect_blob(path, '100644', blob)
+                        self.assertTrue(issues)
+                        self.assertNotIn(address, str(issues))
+                    blob = f'<a href="{address}">Guide</a> ghp_'.encode() + b'a'*40
+                    self.assertTrue(guard.inspect_blob(path, '100644', blob))
+
 
 if __name__ == '__main__':
     unittest.main()
