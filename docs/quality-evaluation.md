@@ -79,6 +79,8 @@ conditions. Obtain actual human-reviewed labels/preferences with source and revi
 provenance, retain the reference and candidate model-work receipts, and execute
 the agreed held-out evaluation without tuning on that set. Objective calibration,
 accepted-result error rates and subjective editorial comparisons require those
-real observations. This implementation supplies no label ingestion, evaluation
-executor, parity thresholds, cross-event aggregation or promotion decision.
+real observations. The [results workflow](quality-results.md) now imports explicit
+categorical human-label declarations against bound native Jev work and reports
+observed accuracy/coverage. It supplies no inference executor, parity thresholds,
+cross-event aggregation or promotion decision.
 Important voice/model/default changes stay in the explicit human review loop.

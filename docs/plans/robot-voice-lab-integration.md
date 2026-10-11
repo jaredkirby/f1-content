@@ -5,6 +5,12 @@ hosted adapter verified. Listening pilot and promotion pending.
 Reviewed: 2026-10-11. The user subsequently authorized implementation, including
 optional vocoder post-processing. Voice defaults remain unchanged.
 
+Integration follow-through: the exact 21 source blobs in the retained implementation
+verification receipt were committed as `314dff9`. The subsequent evaluation-results
+merge preserves them except the deliberate additive shared CLI/wheel wiring.
+Combined main checks passed 263 tests with one opt-in native test skipped and all
+41 actual-wheel tests. Listening/promotion gates below remain pending.
+
 ## Objective
 
 Add reusable text-to-speech generation and optional Robot Voice Lab vocoder

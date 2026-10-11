@@ -1,7 +1,7 @@
 # Offline evaluation results
 
-Date: 2026-10-11. Status: in-progress; isolated source implementation complete,
-main integration pending. Baseline: `034ed1c`.
+Date: 2026-10-11. Status: complete; source integrated into main and combined
+offline/package verification passed. Baseline: `034ed1c`.
 
 ## Objective
 
@@ -54,12 +54,13 @@ native request-bound case attribution, explicit human label declarations, immuta
 receipts and observed accuracy/confusion/coverage by model/question/split. It does
 not perform inference, create film approval or establish parity/calibration.
 
-Next: integrate the verified branch once the concurrent main-checkout voice edits
-are ready for a coordinated merge. The shared CLI is changed by both features;
-the isolated commit preserves each owner's source and avoids committing unfinished
-voice code. Root's main plan/status edits are separate from that source commit.
-Human labels, live held-out execution, calibration and modality work remain later
-gates. Private evidence is under `runs/quality-evaluation-next/`.
+After the user confirmed voice work was finished, root committed its exact verified
+source as `314dff9` and merged this branch into main. Shared CLI and wheel-check
+conflicts preserve both speech and evaluation commands, required resources and
+test suites. All other voice source hashes and the four new evaluation source/test/
+guide files remain identical to their verified originals. Human labels, live
+held-out execution, calibration and listening/promotion remain later gates.
+Private integration evidence is under `runs/quality-evaluation-integration/`.
 
 The first-wave source is committed as `034ed1c`; phone consent source is committed
 locally as `38caf16`. Our staged changes are committed; a concurrent unrelated
@@ -91,3 +92,9 @@ passed. Exact staged diff, source guard and whitespace checks passed before comm
 the worktree is clean. These results apply to `034ed1c` plus the isolated
 evaluation-results changes, not the concurrent unfinished voice implementation.
 No provider calls, real labels, credential access, push or deployment occurred.
+
+Combined main verification: 264 offline tests ran, 263 passed and one opt-in
+Keychain test was skipped; synthetic CLI checks, index and diff checks passed.
+All 41 actual-wheel checks passed with both feature sets in the same package.
+No archive, narration default, provider authorization or private Site was changed
+by integration. This closes the source integration task, not human quality review.

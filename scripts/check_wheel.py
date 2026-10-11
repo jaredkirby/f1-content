@@ -14,6 +14,7 @@ def main(path):
                     'f1_pipeline/narration.py', 'f1_pipeline/narration_cli.py', 'f1_pipeline/speech_provider.py',
                     'f1_pipeline/resources/robot_vocoder.cjs',
                     'f1_pipeline/quality_protocol.py', 'f1_pipeline/story_contract.py',
+                    'f1_pipeline/quality_results.py',
                     'f1_pipeline/live.py', 'f1_pipeline/resources/live.html',
                     'f1_pipeline/resources/jev_questions.json',
                     'f1_pipeline/resources/timeline.css', 'f1_pipeline/resources/timeline.js',
@@ -46,14 +47,17 @@ import f1_pipeline
 import test_review_destination as review
 import test_live as live
 import test_quality_cli as quality
+import test_quality_results_cli as results
 import test_narration as narration
 assert Path(sys.argv[1]).resolve() in Path(f1_pipeline.__file__).resolve().parents
 review.PACKAGE_ROOT = Path(sys.argv[1])
 quality.PACKAGE_ROOT = Path(sys.argv[1])
+results.PACKAGE_ROOT = Path(sys.argv[1])
 suite = unittest.TestSuite([
     unittest.defaultTestLoader.loadTestsFromTestCase(review.ReviewDestinationTests),
     unittest.defaultTestLoader.loadTestsFromTestCase(live.LiveTests),
     unittest.defaultTestLoader.loadTestsFromTestCase(quality.QualityProtocolCLITests),
+    unittest.defaultTestLoader.loadTestsFromTestCase(results.QualityResultsCLITests),
     unittest.defaultTestLoader.loadTestsFromTestCase(narration.NarrationTests),
 ])
 result = unittest.TextTestRunner(verbosity=2).run(suite)

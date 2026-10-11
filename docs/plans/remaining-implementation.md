@@ -81,3 +81,9 @@ Site workflow when authorized, preserving disabled credential entry; collect rea
 latest-film phone feedback; prepare a real frozen sample/rubric and human labels
 for later evaluation. Vision/ASR/narration adapters and cross-event evaluation
 execution are separate future scoped implementation, not delivered by this wave.
+
+Subsequent follow-through: [evaluation results](quality-evaluation-results.md) now
+provide offline human-label/result reporting and are integrated into main. The
+[narration integration](robot-voice-lab-integration.md) implements import/preparation,
+explicit ElevenLabs generation and optional vocoder processing. Vision/ASR,
+open-model narration, real held-out evaluation and human promotion remain pending.

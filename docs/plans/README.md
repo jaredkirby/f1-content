@@ -4,8 +4,8 @@ Reconciled 2026-10-11 against source `043aa03` and saved local verification.
 Historical measurements remain in each plan. A completed implementation does not
 establish hosted interactive verification, human acceptance or model promotion.
 The [remaining-work plan](remaining-implementation.md) owns current assignments.
-The [evaluation-results continuation](quality-evaluation-results.md) owns the next
-offline source pass. First-wave source was committed as `034ed1c`; the independent
+The [evaluation-results continuation](quality-evaluation-results.md) records the
+completed next source pass and combined main integration. First-wave source was committed as `034ed1c`; the independent
 phone consent update was committed locally as `38caf16` and remains unpublished.
 
 | Record | Current assessment |
@@ -33,7 +33,8 @@ phone consent update was committed locally as `38caf16` and remains unpublished.
 | [Live/main integration](live-main-integration.md) | Complete; merge and push followed by CI repair |
 | [Branch preservation audit](branch-preservation-audit.md) | Complete; repair `043aa03` has saved successful five-job CI receipt |
 | [Remaining implementation: first wave](remaining-implementation.md) | Story contracts and offline protocol tooling integrated; Site source prepared; delivery/human gates pending |
-| [Evaluation results](quality-evaluation-results.md) | Implemented/tested on isolated branch `53b082e`; main integration pending alongside concurrent voice work |
+| [Evaluation results](quality-evaluation-results.md) | Integrated into main; combined source and package checks passed |
+| [Robot Voice Lab integration](robot-voice-lab-integration.md) | Phases 1–3 implemented and committed as `314dff9`; listening pilot/promotion pending |
 
 ## Verification limits
 
