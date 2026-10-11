@@ -11,6 +11,15 @@ the internet or launch agents automatically. Presentation copy remains curated f
 those sessions. Jev has an optional, offline-tested adapter; live model quality has
 not been evaluated.
 
+## How the timeline sites were made
+
+The [workflow guide](https://singapore-timeline-workflow.k1rby.chatgpt.site)
+explains the research, reviewed footage, models and tools, recorded instructions,
+video assembly and release checks behind the Singapore Sprint and Qualifying
+sites. Sign in with the owning ChatGPT account to open the private Site.
+A self-contained [HTML copy](docs/timeline-workflow.html) is included in this
+repository. Historical prompt/model gaps and unexecuted Jev rubrics are labeled.
+
 ## Start developing
 
 Use Python **3.11+** (3.12 recommended), Git, and a POSIX shell on macOS or Linux.
@@ -97,7 +106,9 @@ preview or explicitly execute hosted text requests. Automatic routing and live
 model-quality comparisons remain separate work.
 
 The Git guard examines the exact index for forbidden archive paths, binaries,
-common credentials, signed URLs and private host details. Opt into the local hook:
+common credentials, signed URLs and unapproved private host details. Only the
+reviewed Site homepage links in this guide and README are explicitly allowed.
+Opt into the local hook:
 
 ```sh
 git config --local core.hooksPath .githooks

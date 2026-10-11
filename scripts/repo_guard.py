@@ -17,12 +17,22 @@ ROOT_FILES = {".gitignore", ".gitattributes", ".editorconfig", ".python-version"
 MAX_BYTES = 1024 * 1024
 FORBIDDEN_SUFFIXES = {".mp4", ".mov", ".mkv", ".webm", ".mp3", ".wav", ".aiff",
                       ".pdf", ".zip", ".gz", ".tar", ".pyc", ".pem", ".key"}
+# User-authorized documentation links only: exact HTTPS homepages in exact files.
+# A link does not change the Site's owner-private access. No paths, queries,
+# credentials or other private hosting addresses are exempted.
+APPROVED_SITE_LINKS = {
+    "README.md": {"https://" + "singapore-timeline-workflow.k1rby" + ".chatgpt.site"},
+    "docs/timeline-workflow.html": {
+        "https://" + "singapore-sprint-timeline.k1rby" + ".chatgpt.site",
+        "https://" + "singapore-qualifying-timeline.k1rby" + ".chatgpt.site",
+    },
+}
 PATTERNS = {
     "private key": re.compile(r"-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----"),
     "provider token": re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{30,}|sk-(?:proj-)?[A-Za-z0-9_-]{24,})"),
     "signed URL": re.compile(r"[?&](?:sig|signature|token|auth|policy|key-pair-id|x-amz-signature)=[A-Za-z0-9%_~./+-]{8,}", re.I),
     "personal absolute path": re.compile(r"/Users" + r"/[^/\s\"']+/"),
-    "private hosting address": re.compile(r"https?://[A-Za-z0-9.-]+\.chatgpt\.site\b"),
+    "private hosting address": re.compile(r'''https?://[A-Za-z0-9.-]+\.chatgpt\.site\b[^\s<>"')]*'''),
     "credential assignment": re.compile(r'''(?i)["']?(?:api_key|access_token|client_secret|password)["']?\s*[:=]\s*["'][A-Za-z0-9_+/=-]{24,}["']'''),
 }
 
@@ -54,6 +64,11 @@ def inspect_blob(path, mode, blob):
         issues.append("binary content")
     for label, pattern in PATTERNS.items():
         for match in pattern.finditer(content):
+            if label == "private hosting address":
+                approved = APPROVED_SITE_LINKS.get(path, set())
+                address = match.group()
+                if address in approved or (address.endswith('/') and address[:-1] in approved):
+                    continue
             line = content.count('\n', 0, match.start()) + 1
             issues.append(f"{label} at line {line}")
     return issues
